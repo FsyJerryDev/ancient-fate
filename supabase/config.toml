@@ -1,0 +1,3 @@
+project_id = "ancient-fate"
+[functions.fate-api]
+verify_jwt = false

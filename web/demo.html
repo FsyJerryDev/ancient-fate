@@ -1,0 +1,423 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#eee7e6"><title>穿越古代，你能活到第几集？｜试玩演示</title><style>:root {
+  --bg: #f1ebec;
+  --ink: #3b2f46;
+  --muted: #827584;
+  --purple: #7b638c;
+  --purple-dark: #604b75;
+  --lilac: #dacee3;
+  --gold: #ad8b70;
+  --panel: #fffdf9;
+  --panel-soft: #faf6f4;
+  --border: #e8dde3;
+  --shadow: 0 18px 54px rgba(72, 48, 70, .075);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
+button { font: inherit; cursor: pointer; }
+button:disabled { cursor: default; }
+button:focus-visible { outline: 3px solid #b399b9; outline-offset: 4px; }
+::selection { color: #fff; background: #8e719d; }
+.app-shell { min-height: 100vh; background: radial-gradient(ellipse 100% 34% at 50% 0%, #fdfaf8 0%, rgba(248,239,236,.7) 50%, transparent 100%), linear-gradient(165deg,#f2eaea 0%,#f2edf2 40%,#e8e2ee 100%); }
+.app-shell::before { position: fixed; pointer-events: none; content:""; inset:0; z-index:0; opacity:.22; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cpath d='M1 70H139M70 1V139' stroke='%23aa9baf' stroke-opacity='.1'/%3E%3C/svg%3E"); }
+.app-shell > * { position: relative; }
+.app-header { height: 84px; display:flex; align-items:center; justify-content:space-between; gap: 16px; max-width: 880px; margin: 0 auto; padding: 0 24px; border-bottom: 1px solid rgba(122,95,126,.12); }
+.header-brand { display:flex; align-items:center; gap:12px; }
+.brand-emblem { width: 39px; height: 39px; border:1px solid #aa8f84; color:#805c53; font-size: 19px; font-family: serif; border-radius: 10px; display:flex; align-items:center; justify-content:center; transform: rotate(-4deg); background:#fffaf4; box-shadow: 2px 3px 0 rgba(168,129,104,.12); }
+.header-brand strong { font-size: 14px; font-weight: 750; letter-spacing: 2.2px; display:block; }
+.header-brand small { display:block; font-family: Georgia,serif; font-size: 8px; color:#af9489; letter-spacing:1.4px; margin-top:5px; }
+.header-link { border:0; background:transparent; color:#8b7c89; font-size:12px; white-space:nowrap; padding:8px 0 8px 8px; }
+.header-link span { font-size: 15px; }
+main { max-width: 760px; margin: auto; min-height: calc(100vh - 166px); padding: 28px 22px 62px; }
+.site-footer { height:80px; max-width:760px; margin:auto; padding: 25px; display:flex; align-items:center; justify-content:space-between; color:#a594a5; font-size:10px; letter-spacing:2px; border-top:1px solid rgba(120,91,126,.12); }
+.site-footer span:last-child { font: 9px Georgia,serif; letter-spacing:1.5px; }
+.initial-loading { height: 100vh; display:flex; align-items:center; justify-content:center; color: #7b638c; font-size:14px; letter-spacing:3px; }
+.enter { animation: showUp .43s ease both; }
+@keyframes showUp { from { opacity:0; transform:translateY(10px); } to {opacity:1; transform:translateY(0);} }
+.ornament-frame { position: relative; overflow: hidden; }
+.ornament-frame::before, .ornament-frame::after { content:""; position:absolute; width:35px; height:35px; border-color:#c6ad9d; border-style:solid; pointer-events:none; }
+.ornament-frame::before { left:19px; top:19px; border-width:1px 0 0 1px; border-top-left-radius:6px; }
+.ornament-frame::after { right:19px; bottom:19px; border-width:0 1px 1px 0; border-bottom-right-radius:6px; }
+.overline { text-transform:uppercase; color:#9d8278; font-size: 11px; letter-spacing: 4px; font-weight:650; }
+.primary-button { width:100%; display:flex; align-items:center; justify-content:center; gap:12px; min-height:62px; border: 1px solid #756082; border-radius: 14px; background: linear-gradient(115deg,#695476,#866b97 68%,#746082); color:white; font-size:16px; font-weight:700; letter-spacing:1px; box-shadow:0 14px 27px rgba(94,75,108,.2); transition:transform .18s,box-shadow .18s; }
+.primary-button:hover { transform:translateY(-2px); box-shadow:0 17px 34px rgba(94,75,108,.23); }
+.primary-button:active { transform:translateY(1px); }
+.arrow-icon { flex:none; transition:transform .18s; }
+.primary-button:hover .arrow-icon--right { transform:translateX(3px); }
+.arrow-icon--left { transform:rotate(180deg); }
+.secondary-button { padding: 12px 18px; display:inline-flex; align-items:center; justify-content:center; gap:7px; border:1px solid #d8c7d9; border-radius:12px; background:#fffdfa; color:#695779; font-size:13px; font-weight:650; }
+.secondary-button:disabled { opacity:.45; }
+.text-button { border:0; background:transparent; color:#8b7899; font-size:13px; padding:16px 12px; font-weight:600; }
+.disclaimer,.story-note { font-size:11px; text-align:center; color:#aa9bac; line-height:1.9; }
+/* Welcome */
+.home-view { max-width:660px; margin:0 auto; }
+.home-hero { background: radial-gradient(circle at 50% 20%, #fffefa 0%, #fdfaf7 48%, #faf4f3 100%); border:1px solid #eadfdf; box-shadow:var(--shadow); text-align:center; border-radius:24px; padding:84px 31px 39px; isolation:isolate; }
+.home-hero .overline { margin: 30px 0 18px; }
+.hero-orbit { position:absolute; left:50%; top:0; z-index:-1; pointer-events:none; border-radius:50%; border:1px solid rgba(173,135,128,.11); transform:translateX(-50%); }
+.hero-orbit-one { width:370px; height:370px; top:16px; }
+.hero-orbit-two { width:510px; height:510px; top:-60px; }
+.hero-stamp { width:96px; height:96px; background:#755b79; border:4px double #e1c8b8; border-radius:50%; color:#f5e9dc; display:flex; align-items:center; justify-content:center; margin:0 auto; font: 26px/1.2 "STKaiti","KaiTi",serif; box-shadow: 0 0 0 8px #f1e8eb,0 10px 24px rgba(92,64,95,.2); }
+.home-hero h1 { margin:0; font-family: "STSong", "Songti SC", "Noto Serif CJK SC", Georgia, serif; font-size:clamp(34px,6.3vw,51px); line-height:1.5; font-weight:700; letter-spacing:2px; }
+.home-hero h1 em { color:#86617c; font-style:normal; }
+.home-sub { font-size:14px; line-height:2.15; color:#7c6f79; margin:22px 0; }
+.hero-divider { display:flex; align-items:center; justify-content:center; gap:17px; color:#bca395; font-size:13px; margin:28px 0 22px; }
+.hero-divider span { width:64px; height:1px; background:linear-gradient(to right,transparent,#c6b2ad); }
+.hero-divider span:last-child { transform:rotate(180deg); }
+.hero-meta { display:flex; align-items:center; justify-content:center; gap:10px; font-size:12px; color:#877984; flex-wrap:wrap; }
+.hero-meta i { height:3px; width:3px; background:#ba9ba3; border-radius:50%; }
+.hero-start { margin-top:38px; }
+.hero-note { font-size:11px; color:#a797a1; margin:17px 0 0; }
+.intro-grid { display:grid; grid-template-columns:1fr 1fr; gap:13px; margin-top:18px; }
+.feature-tile { padding:22px 23px; background:rgba(255,253,250,.82); border:1px solid rgba(227,215,225,.9); border-radius:16px; }
+.feature-tile > span { display:block; font:20px Georgia,serif; color:#b29587; margin-bottom:11px; }
+.feature-tile strong { font-size:14px; }
+.feature-tile p { font-size:12px; line-height:1.9; color:#938491; margin:8px 0 0; }
+.disclaimer { margin:25px 0 0; }
+/* Chapter */
+.chapter-view { min-height:660px; display:flex; flex-direction:column; align-items:center; text-align:center; padding:30px 38px 54px; background:radial-gradient(circle at 50% 22%,#fffefa,#fbf6f3 60%,#f7f0ef 100%); border:1px solid #e9dbdb; border-radius:24px; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+.chapter-view::before { content:""; position:absolute; top:-170px; left:50%; transform:translateX(-50%); width:600px; height:600px; border:1px solid rgba(177,135,125,.17); border-radius:50%; box-shadow:0 0 0 38px rgba(190,158,157,.045),0 0 0 90px rgba(190,158,157,.035); pointer-events:none; }
+.chapter-topline { font-size:10px; letter-spacing:4px; color:#b39b98; margin-bottom:52px; z-index:1; }
+.chapter-glyph { width:110px; height:110px; display:flex; justify-content:center; align-items:center; font: 68px "STKaiti","KaiTi",serif; color:#795b6e; border:1px solid #bfa8a2; border-radius:50%; margin-bottom:35px; background:rgba(255,251,247,.7); z-index:1; }
+.chapter-view .overline { margin:0 0 16px; z-index:1; }
+.chapter-episode { margin:0 0 13px; color:#9f8c96; font-size:13px; z-index:1; }
+.chapter-view h1 { z-index:1; font-family: "STSong","Songti SC",serif; font-size:clamp(29px,5vw,37px); letter-spacing:2px; margin:0; }
+.chapter-rule { color:#ba9f91; margin:18px 0 25px; }
+.chapter-description { font-size:15px; line-height:2.3; color:#665b65; max-width:520px; margin:0 auto 19px; text-align:justify; text-indent:2em; }
+.chapter-hook { font:17px/1.8 "STKaiti","KaiTi",serif; color:#9b7479; margin:4px 0 34px; }
+.chapter-view .primary-button { max-width:400px; margin-top:auto; z-index:1; }
+.chapter-recap { background:#f5eff0; border-left:2px solid #ba9b9d; border-radius:0 9px 9px 0; text-align:left; padding:15px 17px; margin-bottom:24px; width:100%; max-width:540px; }
+.chapter-recap span { color:#ac8185; font-size:12px; letter-spacing:3px; }
+.chapter-recap p { font-size:12px; line-height:1.9; color:#887b83; margin:5px 0; }
+/* Quiz */
+.quiz-view { max-width:650px; margin:0 auto; }
+.progress-box { padding:20px 23px; background:rgba(255,252,249,.84); border:1px solid #e9dce3; border-radius:15px; margin-bottom:21px; }
+.progress-top { display:flex; justify-content:space-between; align-items:center; color:#9b8089; font-size:12px; margin-bottom:12px; }
+.progress-top strong { font-size:12px; color:#77617c; font-weight:700; }
+.progress-track,.score-track { background:#eee6ea; height:6px; width:100%; overflow:hidden; border-radius:999px; }
+.progress-track > span,.score-track > div { display:block; background:linear-gradient(90deg,#ae8b99,#7f6590); height:100%; border-radius:inherit; transition:width .3s; }
+.quiz-card { background:rgba(255,253,250,.96); border:1px solid #e5d8de; border-radius:24px; box-shadow:var(--shadow); padding:35px 34px 31px; }
+.question-heading { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:32px; }
+.chapter-pill { color:#806c7d; background:#f6eff4; padding:8px 13px; border-radius:999px; font-size:11px; }
+.key-badge { color:#a56c60; background:#faeee7; border:1px solid #efd9d1; padding:7px 10px; font-size:10px; border-radius:999px; letter-spacing:1px; }
+.question-number { font-size:11px; color:#b29792; letter-spacing:3px; text-transform:uppercase; margin-bottom:13px; }
+.quiz-card h2 { margin:0 0 13px; font-family:"STSong","Songti SC",serif; font-size:clamp(27px,4vw,35px); line-height:1.45; font-weight:700; letter-spacing:1px; }
+.question-context { font-size:15px; color:#7f7180; line-height:2; margin:0 0 29px; }
+.choice-list { display:flex; flex-direction:column; gap:12px; }
+.choice-button { text-align:left; border:1px solid #e9dde3; background:#faf6f7; min-height:75px; border-radius:13px; padding:18px 18px; display:flex; align-items:center; gap:14px; transition:background .2s,border-color .2s,transform .2s; color:#4a3d4b; }
+.choice-button:hover:not(:disabled) { border-color:#bfa9c5; background:#f6eef6; transform:translateY(-1px); }
+.choice-button--selected { border-color:#82668f !important; background:#f1e8f1 !important; box-shadow: inset 0 0 0 1px #a78cab; }
+.choice-button:disabled:not(.choice-button--selected) { opacity:.55; }
+.choice-symbol { width:33px; height:33px; border:1px solid #d7c5d5; border-radius:50%; display:flex; flex:none; align-items:center; justify-content:center; font-size:13px; color:#9b7992; background:#fffbfd; }
+.choice-text { font-size:14px; font-weight:580; line-height:1.7; flex:1; }
+.choice-arrow { color:#b5a0b4; font-size:17px; }
+.reaction-box { font-size:12px; min-height:46px; line-height:1.9; color:#aea1ad; background:#fcfaf9; border:1px dashed #eee1e6; border-radius:9px; padding:13px 16px; margin-top:18px; transition:background .2s; }
+.reaction-box--visible { color:#785f78; background:#f6eef3; border-color:#d7c7db; }
+.quiz-bottom { display:flex; justify-content:space-between; align-items:center; padding:18px 4px 6px; }
+.step-hint { font-size:11px; color:#a493a3; }
+.restart-small { display:none; }
+/* Preview */
+.preview-view { max-width:600px; margin:0 auto; }
+.preview-card { text-align:center; border:1px solid #e6d7dd; background:linear-gradient(145deg,#fffefa,#fcf7f5); border-radius:24px; box-shadow:var(--shadow); padding:55px 38px 36px; }
+.palace-seal { display:flex; width:91px; height:91px; align-items:center; justify-content:center; border:1px solid #baa09f; border-radius:50%; margin:0 auto; background:#f9f2ef; box-shadow:0 0 0 8px rgba(198,177,181,.14); }
+.palace-seal span { font:50px "STKaiti","KaiTi",serif; color:#896d7d; }
+.palace-seal--small { width:50px; height:50px; }
+.palace-seal--small span { font-size:25px; }
+.preview-card .overline { margin-top:31px; }
+.preview-card h1 { font:700 clamp(29px,5vw,38px)/1.5 "STSong","Songti SC",serif; letter-spacing:1px; margin:11px 0 25px; }
+.preview-label { margin:0; color:#94818e; font-size:13px; }
+.preview-episode { color:#7c5d88; font-family:"STSong","Songti SC",serif; font-size:34px; margin:12px 0 0; }
+.preview-episode strong { font-size:95px; font-family:Georgia,serif; font-weight:500; }
+.preview-type { color:#9e8590; font-size:14px; margin:7px 0 24px; }
+.preview-locked { display:flex; align-items:center; justify-content:center; text-align:left; gap:14px; border:1px dashed #cfbfcf; background:#faf6fa; border-radius:13px; padding:20px; margin-bottom:19px; }
+.preview-locked > span { font-size:24px; color:#aa8995; }
+.preview-locked strong { display:block; font-size:14px; margin-bottom:7px; }
+.preview-locked small { font-size:11px; color:#9d8c9c; }
+.payment-notice { text-align:left; border-left:3px solid #b9a2b9; padding:12px 16px; background:#f6f0f3; margin-bottom:24px; }
+.payment-notice strong { font-size:12px; }
+.payment-notice p { color:#877786; font-size:12px; line-height:1.8; margin:7px 0 0; }
+.preview-card > .text-button { margin-top:13px; }
+/* Report */
+.report-view { max-width:680px; margin:0 auto; }
+.report-top { display:flex; justify-content:space-between; align-items:center; font-size:11px; margin:0 0 14px; color:#896d82; }
+.report-tag { letter-spacing:2px; }
+.report-demo { color:#a8887a; background:#f9f0ed; border:1px solid #e9d9d5; border-radius:999px; padding:6px 11px; }
+.result-hero { text-align:center; padding:47px 31px 41px; background:radial-gradient(circle at 50% 24%,#fffefa,#fcf7f5); border:1px solid #e5d8de; border-radius:23px; box-shadow:var(--shadow); }
+.result-hero .overline { margin:28px 0 12px; }
+.result-episode { margin:0; font-family:"STSong","Songti SC",serif; font-size:30px; color:#7f647f; }
+.result-episode strong { font:400 104px Georgia,serif; letter-spacing:-4px; }
+.result-hero h1 { font:700 clamp(33px,6vw,45px)/1.5 "STSong","Songti SC",serif; letter-spacing:3px; margin:4px 0 10px; }
+.result-sub { color:#957b88; font-size:14px; margin-bottom:34px; }
+.result-sub span { margin:0 8px; color:#bba7b7; }
+.result-hero blockquote { border:1px solid #e5d7e1; background:#f7f1f5; border-radius:13px; padding:22px 18px; color:#6c566c; font:17px/2 "STKaiti","KaiTi",serif; margin:0; }
+.report-section { background:rgba(255,253,250,.94); border:1px solid #e7dbe0; border-radius:21px; padding:32px 34px 36px; margin-top:16px; box-shadow:0 10px 32px rgba(72,48,70,.042); }
+.section-index { font-size:11px; color:#aa8e83; letter-spacing:3px; margin-bottom:9px; }
+.report-section h2 { font:700 26px/1.45 "STSong","Songti SC",serif; margin:0; }
+.section-subtitle { color:#9b8b94; font-size:12px; margin:9px 0 27px; line-height:1.8; }
+.story-paragraphs { font-size:14px; line-height:2.25; color:#6c5b68; }
+.story-paragraphs p { text-indent:2em; margin:0 0 15px; }
+.echo-box { background:#f8f2f5; border-left:3px solid #af96a5; padding:16px 18px; border-radius:0 10px 10px 0; margin-top:21px; }
+.echo-box strong { font-size:12px; color:#9a7a87; }
+.echo-box p { font-size:13px; line-height:1.9; margin:6px 0 0; color:#736071; }
+.score-list { display:flex; flex-direction:column; gap:25px; }
+.score-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:14px; }
+.score-header span { color:#997988; font-size:14px; font-weight:700; }
+.score-track { height:10px; }
+.score-row p { font-size:12px; line-height:1.8; color:#9a8b99; margin:8px 0 0; }
+.recall-list { display:flex; flex-direction:column; gap:0; }
+.recall-item { display:flex; gap:17px; padding:13px 0 19px; border-bottom:1px solid #efe6e9; }
+.recall-item:last-child { border-bottom:0; }
+.recall-index { font:24px Georgia,serif; color:#bd9f9a; width:44px; flex:none; }
+.recall-item h3 { font-size:14px; margin:0 0 8px; }
+.recall-item p { font-size:13px; line-height:1.9; margin:0; color:#877786; }
+.insight-card { border:1px solid #eee4ea; background:#fbf7f9; border-radius:12px; padding:17px 18px; margin-top:10px; }
+.insight-card span { display:block; color:#91728e; font-size:12px; font-weight:750; margin-bottom:10px; }
+.insight-card p { color:#695969; font-size:13px; line-height:1.95; margin:0; }
+.quote-list { display:flex; flex-direction:column; gap:12px; }
+.quote-list blockquote { margin:0; border:1px solid #e7dce5; background:#faf6f9; padding:17px 17px; border-radius:12px; color:#6c5369; font:16px/1.9 "STKaiti","KaiTi",serif; display:flex; gap:14px; align-items:baseline; }
+.quote-list blockquote span { font:14px Georgia,serif; color:#baa1b0; }
+.report-actions { display:flex; flex-direction:column; gap:12px; margin:21px 0 0; }
+.report-actions > p { font-size:11px; line-height:1.8; color:#a795a5; text-align:center; }
+.toast { position:fixed; z-index:50; left:50%; bottom:35px; transform:translateX(-50%); background:#433a4f; color:#fff; padding:13px 21px; border-radius:12px; font-size:13px; box-shadow:0 12px 30px rgba(30,20,40,.25); white-space:nowrap; max-width:92vw; }
+@media (max-width: 590px) {
+  .app-header { height:71px; padding:0 19px; }
+  main { padding:16px 12px 45px; }
+  .brand-emblem { width:35px; height:35px; }
+  .header-brand strong { font-size:12px; letter-spacing:1px; }
+  .header-brand small { font-size:7px; letter-spacing:.8px; }
+  .home-hero { padding:67px 20px 30px; border-radius:18px; }
+  .hero-stamp { width:79px; height:79px; font-size:23px; }
+  .home-hero .overline { font-size:9px; letter-spacing:2.8px; }
+  .home-sub { font-size:12px; line-height:2.1; }
+  .hero-meta { font-size:10px; gap:6px; }
+  .hero-start { margin-top:29px; }
+  .primary-button { font-size:14px; min-height:57px; }
+  .intro-grid { gap:10px; }
+  .feature-tile { padding:17px 14px; }
+  .feature-tile strong { font-size:12px; }
+  .feature-tile p { font-size:11px; }
+  .chapter-view { padding:27px 23px 35px; min-height:625px; border-radius:18px; }
+  .chapter-description { font-size:13px; }
+  .chapter-topline { margin-bottom:43px; }
+  .chapter-view h1 { font-size:29px; }
+  .chapter-hook { font-size:15px; }
+  .quiz-card { padding:28px 19px 25px; border-radius:18px; }
+  .question-heading { margin-bottom:27px; }
+  .quiz-card h2 { font-size:28px; }
+  .question-context { font-size:14px; }
+  .choice-button { padding:15px 12px; gap:11px; min-height:71px; }
+  .choice-text { font-size:13px; }
+  .choice-symbol { height:28px; width:28px; font-size:12px; }
+  .step-hint { font-size:10px; }
+  .preview-card { padding:43px 22px 30px; border-radius:18px; }
+  .preview-episode strong { font-size:85px; }
+  .report-section { padding:28px 21px 30px; border-radius:17px; }
+  .result-hero { padding:40px 22px 33px; border-radius:18px; }
+  .result-episode strong { font-size:92px; }
+  .report-section h2 { font-size:23px; }
+  .site-footer { height:65px; padding:19px 15px; font-size:8px; }
+  .site-footer span:last-child { font-size:8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
+}
+
+/* App-native confirmation: avoids window.confirm, which can be blocked in previews. */
+.restart-overlay { position:fixed; z-index:1000; inset:0; background:rgba(30,22,38,.59); display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); }
+.restart-dialog { background:#fffaf9; width:min(100%,430px); border:1px solid #e9dce6; border-radius:22px; padding:31px 25px 24px; box-shadow:0 24px 70px rgba(29,22,39,.35); text-align:center; }
+.restart-dialog-kicker { color:#9b8099; font-size:10px; letter-spacing:3px; }
+.restart-dialog h2 { margin:17px 0 12px; color:#4c3a51; font:700 26px/1.4 "STSong","Songti SC",serif; }
+.restart-dialog p { color:#877585; font-size:13px; line-height:1.85; margin:0 0 25px; }
+.restart-dialog-actions { display:flex; gap:10px; }
+.restart-dialog-actions button { flex:1; min-width:0; padding:11px 6px; min-height:53px; font-size:13px; white-space:normal; line-height:1.4; }
+@media (max-width:400px) { .restart-dialog { padding:26px 17px 18px; } .restart-dialog-actions { gap:8px; } .restart-dialog-actions button { font-size:12px; } }
+
+
+/* 选择后的剧情反馈：居中弹窗、加大字号、3～5秒阅读进度条。 */
+.question-instruction { font-size:12px; color:#aea1ad; margin:20px 0 0; text-align:center; line-height:1.8; }
+.feedback-overlay { position:fixed; z-index:950; inset:0; background:rgba(31,23,38,.62); display:flex; align-items:center; justify-content:center; padding:22px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); }
+.feedback-dialog { width:min(100%,480px); background:linear-gradient(150deg,#fffefd,#f6edf5); padding:36px 32px 29px; border-radius:23px; border:1px solid #e7d5e6; box-shadow:0 25px 75px rgba(25,18,32,.34); text-align:center; animation:showUp .3s ease both; }
+.feedback-seal { margin:0 auto 16px; width:56px; height:56px; border-radius:50%; background:#eee2ed; color:#866c98; border:1px solid #d2bad3; display:flex; align-items:center; justify-content:center; font-size:28px; }
+.feedback-kicker { margin:0 0 18px; font-size:12px; letter-spacing:4px; font-weight:700; color:#8d6a91; }
+.feedback-text { font-size:18px; font-weight:550; line-height:1.95; color:#46364c; margin:0 0 30px; text-align:center; }
+.feedback-countdown { width:100%; height:5px; background:#e7dbe9; border-radius:999px; overflow:hidden; }
+.feedback-countdown > span { display:block; width:100%; height:100%; background:linear-gradient(90deg,#bb91ab,#79628c); transform-origin:left center; animation:feedback-drain 4s linear both; }
+@keyframes feedback-drain { from{transform:scaleX(1)} to{transform:scaleX(0)} }
+.feedback-footnote { margin:14px 0 0; font-size:12px; letter-spacing:.4px; color:#9e8ca0; }
+@media (max-width:590px) { .feedback-dialog {padding:30px 22px 26px;} .feedback-text{font-size:17px;} }
+
+/* 完整剧集的命运进度，和16题问卷进度明确区分。 */
+.fate-progress { text-align:left; background:#f7f0f7; padding:15px 18px 14px; border:1px solid #e7d8e8; border-radius:14px; margin:19px 0 22px; }
+.fate-progress-heading { display:flex; justify-content:space-between; align-items:baseline; gap:7px; font-size:12px; color:#8d768a; }
+.fate-progress-heading strong {font-size:14px; color:#775984; white-space:nowrap; }
+.fate-progress-heading em {font-style:normal; font-size:12px; font-weight:600; color:#a28b9c;}
+.fate-progress-track {height:10px; background:#e6dbe8; border-radius:999px; overflow:hidden; margin:12px 0 7px;}
+.fate-progress-track > span {display:block; height:100%; background:linear-gradient(90deg,#ae87ab,#79628c); border-radius:inherit;}
+.fate-progress-labels {display:flex; justify-content:space-between; font-size:10px; color:#9c8b9d;}
+@media (max-width:410px) {.fate-progress {padding:13px 12px;} .fate-progress-heading strong{font-size:12px;} .fate-progress-heading em{font-size:11px;} }
+</style></head><body><div id="root"></div><script id="game-data" type="application/json">{"chapters":[{"id":1,"eyebrow":"CHAPTER I · 命运起笔","title":"一封不该出现的密信","episodes":"第 1—2 集","description":"你从梦中醒来，已是大曜王朝的一名年轻记录官。上任第一天，你便接手赈灾粮款文书。三页突然缺失的记录，正悄悄将你卷入一场风暴。","hook":"第一步棋，往往决定你会被谁看见。","glyph":"壹"},{"id":2,"eyebrow":"CHAPTER II · 风起粮仓","title":"消失的三千石赈粮","episodes":"第 3—4 集","description":"粮仓外，饥饿的百姓与守卫僵持。一批登记在册的赈粮离奇消失，而你手中的蛛丝马迹，开始指向朝中之人。","hook":"有人要你闭嘴，有人盼你开口。","glyph":"贰"},{"id":3,"eyebrow":"CHAPTER III · 宫宴如棋","title":"所有人都在说谎","episodes":"第 5—6 集","description":"一封突如其来的夜宴请帖将你带进深宫。歌舞升平之下，每一双眼睛都在审视你。失踪的证人，或许就在今夜出现。","hook":"棋局深处，真话有时比谎言更危险。","glyph":"叁"},{"id":4,"eyebrow":"CHAPTER IV · 朝堂终局","title":"最后一场朝堂对决","episodes":"第 7—8 集","description":"赈粮案即将公开审理，你终于获得了陈述真相的机会。八集以来的每一次抉择，都将在殿前迎来回响。","hook":"你会如何落下最后一子？","glyph":"肆"}],"chapterOutros":{"1":"你已走过最初两集。但那封密信的主人，似乎比你想象中更了解这座宫城。","2":"第 4 集结束。粮仓的迷雾未散，一封深宫夜宴的邀请却已送到你的案头。","3":"第 6 集结束。你终于知道，不是所有敌人都站在明处，也不是所有朋友都会开口。"},"questions":[{"id":1,"chapter":1,"episode":1,"title":"缺失的三页","context":"一册赈粮记录缺了三页。你刚刚入职，谁也不愿多说一句。","key":false,"choices":[{"id":"A","text":"先对照目录和其他文书，确定缺失内容。","feedback":"你发现目录页的笔迹与正文不同。有人比你更早动过这本账册。"},{"id":"B","text":"找熟悉内务的老书吏，询问其中缘由。","feedback":"老书吏沉默片刻，提醒你晚上别独自去文书房。"},{"id":"C","text":"主动申请进入封存库房，寻找原始记录。","feedback":"库房的封条完好，锁眼却有一道新鲜划痕。"},{"id":"D","text":"先保证当天应处理的公务不会因此延误。","feedback":"你稳住了手头差事，也让焦躁的同僚松了口气。"}]},{"id":2,"chapter":1,"episode":1,"title":"无端的责罚","context":"另一名年轻记录官被上司指责弄丢公文，而你知道事实另有隐情。","key":false,"choices":[{"id":"A","text":"整理当天交接记录，找出真实责任归属。","feedback":"一张交接单帮同僚洗清了部分嫌疑。"},{"id":"B","text":"私下沟通双方，让误会得到澄清。","feedback":"上司的语气软了下来，同僚向你投来感激的一眼。"},{"id":"C","text":"当场说明自己看到的情况，为他辩解。","feedback":"你的声音传遍书房，所有人都记住了你的名字。"},{"id":"D","text":"主动替他完成积压公务，避免进一步受罚。","feedback":"你接过那叠沉重的卷宗，赢得了一份沉默的信任。"}]},{"id":3,"chapter":1,"episode":2,"title":"改动的日期","context":"运粮日期与朝廷公告相差整整七天。上司说只是笔误。","key":false,"choices":[{"id":"A","text":"按时间梳理运输过程，寻找矛盾。","feedback":"两次运输记录竟共用了同一枚驿站印章。"},{"id":"B","text":"向接触过粮车的人打听实际情况。","feedback":"一个马夫告诉你，确实有车队在深夜出城。"},{"id":"C","text":"直接找负责运输的官员询问。","feedback":"那位官员神色骤变，反问你是谁派来的。"},{"id":"D","text":"提醒有关人员重新核对，避免粮食发放出错。","feedback":"你留下了谨慎的书面记录，也暂时稳住了局面。"}]},{"id":4,"chapter":1,"episode":2,"title":"密信风波","context":"夜里，一封写着你名字的密信出现在案上。它可能藏着赈粮秘密，也可能是个陷阱。","key":true,"choices":[{"id":"A","text":"仔细检查印章、笔迹与来源。","feedback":"你在纸角发现特殊印记。它或许能成为日后的重要证据。"},{"id":"B","text":"找一位信得过的老书吏秘密求证。","feedback":"老书吏答应帮你查，他的支持将来可能派上用场。"},{"id":"C","text":"带着密信直接追问最可疑的人。","feedback":"你从对方的慌乱中抓住线索，但你的行动也暴露在众人眼中。"},{"id":"D","text":"先保护被密信牵连的年轻同僚。","feedback":"同僚记下你的恩情，只是暗处的敌人也发现了你的软肋。"}]},{"id":5,"chapter":2,"episode":3,"title":"粮仓前的争执","context":"粮仓大门紧闭，灾民与守卫发生争执，哭声和斥责声混在一起。","key":false,"choices":[{"id":"A","text":"核对发放名单与粮食数量，查明问题。","feedback":"发放清册中有一笔数目无法对应实际库存。"},{"id":"B","text":"向百姓解释情况，尽量缓和现场情绪。","feedback":"骚动暂歇，几位百姓愿意告诉你他们看到的事。"},{"id":"C","text":"请求守卫打开安全通道，先疏散人群。","feedback":"秩序逐渐恢复，你也赢得了守卫队长的注意。"},{"id":"D","text":"优先安置老人、孩子和身体虚弱的人。","feedback":"一位老人握着你的手，反复道谢。"}]},{"id":6,"chapter":2,"episode":3,"title":"来自上司的暗示","context":"你准备上报粮食异常，上司却暗示你别多管闲事。","key":false,"choices":[{"id":"A","text":"补足证据，确保举报内容经得起调查。","feedback":"你把账页、日期和印记重新整理成了一份证据清单。"},{"id":"B","text":"找可信赖的同僚，听听他们的判断。","feedback":"同僚低声告诉你，上司最近常与陌生官员来往。"},{"id":"C","text":"坚持向更高一级的官员直接呈报。","feedback":"呈报已经递出，接下来你必须承受它带来的目光。"},{"id":"D","text":"表示愿意承担上报可能带来的责任。","feedback":"有人劝你别这么傻，但你没有收回自己的名字。"}]},{"id":7,"chapter":2,"episode":4,"title":"消失的粮车","context":"一辆关键粮车临时改道，未留下任何合理说明。","key":false,"choices":[{"id":"A","text":"对照地图和运单，推断可能的去向。","feedback":"你圈出三条路线，其中一条经过废弃的旧仓。"},{"id":"B","text":"联系沿途驿站，托熟人留意消息。","feedback":"傍晚，一名驿卒悄悄递来一份车马登记。"},{"id":"C","text":"立即派人追查粮车下落。","feedback":"追查队伍赶在天黑前找到了一处可疑车辙。"},{"id":"D","text":"先保证剩余粮食正常供给灾民。","feedback":"被打乱的发粮秩序重新运转，百姓终于等来了口粮。"}]},{"id":8,"chapter":2,"episode":4,"title":"天亮之前","context":"三千石赈粮去向不明，转运官员要求你天亮前给出交代。","key":true,"choices":[{"id":"A","text":"连夜进入库房，核对粮仓账册。","feedback":"你找到一份被遗漏的账目，但也错过了与其他人交涉的机会。"},{"id":"B","text":"请可信的同僚分头查访，扩大线索来源。","feedback":"你的伙伴送来证词，不过更多人知道了你在追查此案。"},{"id":"C","text":"请求守卫封存相关粮仓，阻止记录转移。","feedback":"粮仓被及时封锁，虽然招来阻力，重要的物证却保住了。"},{"id":"D","text":"组织剩余粮食救济百姓，争取他们的信任。","feedback":"灾民的安危暂时有了保障，一位关键知情人愿意帮你。"}]},{"id":9,"chapter":3,"episode":5,"title":"夜宴请帖","context":"夜宴的邀请来得突然，落款上却是你未曾见过的私人印章。","key":false,"choices":[{"id":"A","text":"查明送帖人，推断宴会真正目的。","feedback":"你发现请帖上的纹饰属于一位极少露面的重臣。"},{"id":"B","text":"找熟识的官员一同赴宴，相互照应。","feedback":"有人答应同行，也提醒你席间要小心别人的试探。"},{"id":"C","text":"独自赴宴，亲自试探邀请者。","feedback":"你推门入席，宴中数道目光不约而同落在身上。"},{"id":"D","text":"先安排可能被牵连的同伴留在安全处。","feedback":"同伴被妥善安置，你独自承担更多未知。"}]},{"id":10,"chapter":3,"episode":5,"title":"席上的指控","context":"酒过三巡，有人当众暗示你收受贿赂。","key":false,"choices":[{"id":"A","text":"要求对方提供礼单与相应证据。","feedback":"对方迟迟拿不出礼单，席间响起了细微议论。"},{"id":"B","text":"请在场知情者协助澄清。","feedback":"一位官员站起身来，为你补上关键的说明。"},{"id":"C","text":"当场反驳，要求对方说清指控依据。","feedback":"厅堂寂静下来，对方的笑容僵在脸上。"},{"id":"D","text":"先避免无辜同僚被牵连，再处理自己。","feedback":"同僚被你从风波中隔开，却有人借机说你心虚。"}]},{"id":11,"chapter":3,"episode":6,"title":"沉默的证人","context":"你找到一名知情小吏，但他害怕得几乎说不出话。","key":false,"choices":[{"id":"A","text":"帮他梳理证词，明确哪些能够证实。","feedback":"零碎的话语终于拼凑出一条完整的时间线。"},{"id":"B","text":"慢慢建立信任，让他愿意开口。","feedback":"那人终于放下戒备，告诉你自己并非孤身一人。"},{"id":"C","text":"表示愿意出面揭露真相。","feedback":"他被你的勇气打动，声音渐渐不再发抖。"},{"id":"D","text":"先确保他与家人的安全。","feedback":"他长叹一口气，终于愿意让你知道自己所见。"}]},{"id":12,"chapter":3,"episode":6,"title":"夜宴惊变","context":"有人拿出伪造账册，试图将失粮案推到你的部门。证人被人拦在屏风之后。","key":true,"choices":[{"id":"A","text":"暗中留下印信拓样，为后续调查保留凭据。","feedback":"你获取关键印记，并发现它与旧账册上的痕迹相呼应。"},{"id":"B","text":"在宾客间私下沟通，希望更多人讲出实情。","feedback":"有几位宾客表示愿意帮忙，但他们仍需要你给出说服力。"},{"id":"C","text":"当众指出伪证中的矛盾，迫使对方回应。","feedback":"你冒险揭穿一处笔误，伪证的可信度当场动摇。"},{"id":"D","text":"护送证人离开危险现场。","feedback":"证人得以脱身，但当夜的指控一时无人正面回应。"}]},{"id":13,"chapter":4,"episode":7,"title":"证人将被调走","context":"朝审前，幕后之人准备悄悄调走几名关键证人。","key":false,"choices":[{"id":"A","text":"判断哪些证词最重要，先整理证据。","feedback":"你把证人的说法与物证逐一对应，找到能够相互验证的部分。"},{"id":"B","text":"联系可信赖的官员，寻求联合支持。","feedback":"几位官员愿意出面，即使这意味着他们也会遭到质问。"},{"id":"C","text":"派人阻止证人被强行带离。","feedback":"夜路被及时截住，证人终于有机会等到天亮。"},{"id":"D","text":"替证人安排安全去处。","feedback":"证人得以安睡一夜，而你也多了一份沉甸甸的承诺。"}]},{"id":14,"chapter":4,"episode":7,"title":"替罪的请求","context":"一名同僚表示愿意独自承担全部责任，希望其他人不再受牵连。","key":false,"choices":[{"id":"A","text":"核对各方供词，查明真正责任。","feedback":"你发现这个看似完美的认罪说法里有一处时间漏洞。"},{"id":"B","text":"劝说知情者共同出面讲清事实。","feedback":"更多人终于决定不再沉默。"},{"id":"C","text":"公开反对让一个人承担所有过错。","feedback":"你的反对令满堂惊愕，也为同僚争取了辩解的机会。"},{"id":"D","text":"告诉同僚，你愿意与他一起面对后果。","feedback":"他望向你，终于不再把所有责任揽到自己身上。"}]},{"id":15,"chapter":4,"episode":8,"title":"最后的劝退","context":"朝审前夜，一位神秘官员劝你就此退下，称继续追查只会招来灾祸。","key":false,"choices":[{"id":"A","text":"最后检查一遍证据，确认自己的判断。","feedback":"你从头读完了全部记录，发现许多看似偶然的细节彼此呼应。"},{"id":"B","text":"找到支持自己的官员，统一行动。","feedback":"几盏书房的灯亮到天明，你不再独自站在风里。"},{"id":"C","text":"坚持出庭，即使可能遭到针对。","feedback":"你把官服整齐叠好，决定明早直面所有人的目光。"},{"id":"D","text":"提前安排好证人与同伴的退路。","feedback":"你留下一封信：无论明天发生什么，都不要让无辜者再受牵连。"}]},{"id":16,"chapter":4,"episode":8,"title":"殿前定局","context":"钟声响起，皇帝命你解释赈粮案的一切异常。你必须决定最后的行动。","key":true,"choices":[{"id":"A","text":"将收集到的账册、印信与记录呈堂。","feedback":"你双手举起账册。所有目光都落在那几页薄纸上。"},{"id":"B","text":"邀请愿作证的官员和同伴共同陈词。","feedback":"你回头看去，席间有人缓缓站起。"},{"id":"C","text":"直接质询幕后之人，揭穿其自相矛盾之处。","feedback":"你抬头迎上对方的目光，殿内鸦雀无声。"},{"id":"D","text":"以自己的名义为证人与无辜同僚作保。","feedback":"你向前一步，把自己的姓名写进了这场风波。"}]}],"endings":[{"id":"strategy_early","role":"strategy","tier":"early","episode":12,"name":"纸上谋臣","title":"聪明人的第一场败局","coverQuote":"算对了所有人的心思，却没算到自己的处境。","story":["第十二集，你把最后一份推断递进朝堂。每一个数字都有依据，每一个时间都能对上，可是你的证据始终少了决定性的那一页。","掌权者没有当场发难，只是轻飘飘地调你离开了京城。后来，边城流传着一位善于破案的书吏，替不少普通人洗清了冤屈。","你没能成为朝堂中的传奇，却没有浪费看清世界的天分。"],"strengths":"观察敏锐、思路细密；遇到问题习惯先寻找证据而非急于表态。","shadow":"容易相信只要道理足够严密，事情就一定能够如愿推进。","counsel":"推理之外，别忘了人、时机和执行。有时候先争取一位帮手，比再找一条证据更重要。","quotes":["棋差一着，未必全盘皆输。","我记得所有细节，只是忘了谁在执棋。","离开朝堂，也能写出自己的史书。"]},{"id":"strategy_middle","role":"strategy","tier":"middle","episode":38,"name":"退隐军师","title":"看懂棋局的人，终于选择离席","coverQuote":"真正的聪明，是知道何时该离开棋盘。","story":["第三十八集，朝堂已知你能谋善断，许多人想把你请入自己的阵营。","你却在最热闹的一次宴席后递上辞呈。粮案真相终于显露，但权力游戏没有尽头；你不想把余生都用来预判他人的背叛。","数年后，有人循着江南的旧路找到你，只看见院中棋盘一副、春茶两盏。你不再为谁布局，却终于能为自己决定明天。"],"strengths":"清醒、克制、能从复杂局势中辨认长期代价。","shadow":"分析太多可能拖慢决定，也可能让自己与真实感受渐行渐远。","counsel":"真正的掌控不是预知所有结果，而是接受某些未知仍然值得尝试。","quotes":["这局棋，我不下了。","天下如局，而我自有归途。","退一步不是认输，是换一种赢法。"]},{"id":"strategy_legend","role":"strategy","tier":"legend","episode":88,"name":"幕后执棋者","title":"第八十八集，棋局终于落定","coverQuote":"人人都以为你是棋子，直到最后才发现棋盘是你摆的。","story":["第八十八集，宫门外大雪纷飞。曾经无人相信的小记录官，已成为朝中最懂得如何让事实开口的人。","你把粮案中相互呼应的账册和证词一一呈上，没有激烈言辞，却让重重谎言失去了支点。那些曾试图利用你的人终于明白：你从没急着赢下一城一池，而是在积攒改变局面的力量。","你没有坐上最高的位置，但数年之后，朝廷一项项新政背后，都能看见你留下的笔迹。"],"strengths":"洞察、耐心、全局意识，你愿意花时间理解问题真正的结构。","shadow":"过度谋划有时会让朋友觉得你遥远，也会错过不需要计算的真诚。","counsel":"偶尔把棋盘交给别人，信任同伴的即兴发挥。","quotes":["落子无声，山河有应。","我不争一时，只看终局。","人人都是棋子，也都能成为执棋者。"]},{"id":"social_early","role":"social","tier":"early","episode":11,"name":"错信之人","title":"你把信任交给了错误的人","coverQuote":"你愿意相信所有人，可惜并非所有人都值得相信。","story":["第十一集，你以为自己终于找到了能并肩作战的朋友，于是将最后一条线索交到对方手中。","次日，密信不翼而飞，你成了替罪的人。幸而曾被你真心帮助过的小吏出面求情，才让你得以离开险恶的宫城。","后来你在南方开起一间小茶舍，总有人愿意与你说心事。你依旧相信人，但学会了先看行动，再付真心。"],"strengths":"有同理心、愿意倾听，容易让陌生人卸下防备。","shadow":"会把理解别人的难处误当成对方值得信赖的证明。","counsel":"信任不必收回，但可以分阶段交付。真正可靠的人，经得起时间验证。","quotes":["不是所有握住的手，都能一起走到最后。","我依然相信人，只是不再盲信。","温柔不是没有边界。"]},{"id":"social_middle","role":"social","tier":"middle","episode":42,"name":"四方游说者","title":"你赢得了更自由的江湖","coverQuote":"你没有赢得整座朝堂，却赢得了值得信赖的人。","story":["第四十二集，你用耐心与诚意促成数位官员共同作证，让粮案终于有了结果。","有人邀你留下争一席高位，你却想到那些在灾年中等待消息的百姓。你自请行走州县，为流民和地方官搭起沟通的桥。","多年以后，驿站里仍有人说起那位总能把对立的人请到同一张桌前的使者。"],"strengths":"耐心沟通、协调分歧、照顾不同人的情绪和处境。","shadow":"容易为了维持和气而延后必要的冲突。","counsel":"善意的协调不意味着总要折中；当原则受到挑战时，可以坚定地说不。","quotes":["最远的路，是从你的心走到我的心。","不必人人同路，但愿彼此有归途。","有些难关，是一起走过的。"]},{"id":"social_legend","role":"social","tier":"legend","episode":86,"name":"朝堂调停者","title":"人人愿意站出来的那一日","coverQuote":"你最强大的武器，从来不是权力，而是人心。","story":["第八十六集，粮案审理早已过去多年，新旧势力之间又起争执。","你不曾握有最锋利的权柄，却能请来曾经互相敌视的官员，让众人先看见共同要守护的事。那天殿上没有惊天一吼，只有一份份被人郑重签下的承诺。","史官为你写下一句评语：以诚聚众，以信成事。你知道，这比任何封赏都珍贵。"],"strengths":"共情敏锐、善于结盟，让分散的人愿意为共同目标行动。","shadow":"把太多精力放在照顾所有人的感受上，容易忽略自己的真实需要。","counsel":"好的关系既需要理解别人，也需要把自己的边界说清楚。","quotes":["人心不是棋子，是灯火。","我不靠威势服众，只盼同心。","让不同的人，守同一个承诺。"]},{"id":"courage_early","role":"courage","tier":"early","episode":10,"name":"锋芒早露者","title":"这把剑，出鞘得太早","coverQuote":"你的勇敢无人能及，只是这一局，出剑太早。","story":["第十集，面对朝堂之上的诬陷，你第一个站出来反驳，甚至不惜在众人面前揭开幕后之人的名字。","可你还缺少能够站稳脚跟的证据。对方没有与你争辩，只利用一道调令让你离京。","你后来成为边城百姓最爱提起的侠义之人：走得太快，跌过一跤，却从未失去继续前进的胆量。"],"strengths":"行动果断、勇于面对冲突、在他人犹豫时能够率先迈步。","shadow":"容易把立即行动视为唯一的勇敢，忽视准备和节奏。","counsel":"真正的胆识不是每次都冲在最前，而是知道何时把力量留给关键一击。","quotes":["剑出太早，江湖还长。","我输的是时机，不是胆量。","一身锋芒，也要学会藏光。"]},{"id":"courage_middle","role":"courage","tier":"middle","episode":35,"name":"仗剑离朝客","title":"走出宫门，天地才刚刚开始","coverQuote":"困住你的从来不是强敌，而是那座太小的朝堂。","story":["第三十五集，你一连几次在险境中果断行动，终于为赈粮案争得转机。","然而，当朝堂开始围绕封赏与官位争执时，你忽然厌倦了这一切。你卸下官服，背起行囊走向边关。","那年秋天，驿道上多了一位行踪不定的游侠。有不平处便有你的身影，有人问你为何不求高官，你答：江湖比宫门宽多了。"],"strengths":"有行动力、重自由、敢于为真实想法改变方向。","shadow":"不喜欢束缚时，可能低估长期坚持的价值。","counsel":"自由与责任并不冲突；选定值得守护的方向，也是一种勇敢。","quotes":["宫门之外，才是山河。","我的官职？江湖闲人。","路远天高，我自去也。"]},{"id":"courage_legend","role":"courage","tier":"legend","episode":90,"name":"逆局开拓者","title":"第九十集，绝境里开出新路","coverQuote":"当所有人都在等待答案时，你已经开始改变问题。","story":["第九十集，朝中又遇一场天灾，旧有制度迟迟无法让粮食及时送到百姓手中。","你不愿只在殿上争论，把此前赈粮案揭露的漏洞一一化成新办法：沿途登记、临时调度、公开核对。有人说你太冒险，但事实很快给出了回应。","后来史书没有详写你的官阶，只记住那一年千里道路上的炊烟，又一次升了起来。"],"strengths":"果敢、开拓、敢在不确定性中承担行动责任。","shadow":"冲锋太快时可能遗漏同伴的顾虑与执行成本。","counsel":"把勇气和反馈结合起来：先行动、小步验证，再带更多人一起走。","quotes":["既无路，便开路。","等风来的人很多，起身的人很少。","不是天命不可改，是尚未有人动手。"]},{"id":"duty_early","role":"duty","tier":"early","episode":13,"name":"守诺之人","title":"你守住了承诺，也付出了代价","coverQuote":"你守住了自己的承诺，却没能守住这场权力游戏。","story":["第十三集，案情突然反转。为了避免证人和同僚被连坐，你主动承担了自己本不必独自承担的责任。","你被调离京城，未能看到朝审最终的宣判。可你保护下来的几个人后来把关键真相公之于众。","多年以后，那座偏远的县城仍有人记得你：有事找那位记录官，他说过的事，一定作数。"],"strengths":"守信可靠、遇到困难不轻易推卸责任。","shadow":"容易把所有人的问题都看成自己的责任。","counsel":"承担并不是无限透支；让值得信任的人也有机会支持你。","quotes":["答应过的事，就要有回音。","世事难全，我仍守诺。","守住别人，也要记得守住自己。"]},{"id":"duty_middle","role":"duty","tier":"middle","episode":40,"name":"边城守望者","title":"离开京城之后，你守住了另一片天地","coverQuote":"你离开了权力中心，却成了许多人最后的依靠。","story":["第四十集，朝审结束，你没有为自己争一份官阶，而是主动请缨到受灾最严重的边城。","你在城门口搭起临时粮棚，重新安排发放，替一户户人家登记所需。有人笑你放着京城不待，偏要来吃苦。","等到来年麦浪翻金，城中百姓自发在路边为你送行。你才发现，自己的结局比朝堂上的任何奖赏都更有重量。"],"strengths":"踏实、有韧性，在长期艰难的事情上能够持续投入。","shadow":"可能因为习惯扛事而拒绝接受他人的帮助。","counsel":"责任也需要分担。一个能持久运转的团队，比一个永远不休息的英雄更可靠。","quotes":["京华千里，不如万家灯火。","我守一座城，也守每一个清晨。","总有人该留下来。"]},{"id":"duty_legend","role":"duty","tier":"legend","episode":84,"name":"两朝定海针","title":"潮水来去，你始终站在那里","coverQuote":"风雨再大，你始终是那个让所有人安心的人。","story":["第八十四集，时局更迭，旧臣离去，新官上任。宫中有许多会说漂亮话的人，却很少有人像你一样，愿意把做过的每一件事留在账册上。","你历经两朝，推动赈粮制度渐渐透明，让普通人的口粮不再轻易消失在层层公文之间。","后来新任记录官翻看前朝卷宗，总能在最难的地方看见你留下的一行字：此事未结，须有人继续。"],"strengths":"可靠、有韧性，在混乱中愿意为长期秩序持续负责。","shadow":"为了守住他人和规则，可能不允许自己脆弱或求助。","counsel":"值得信赖的人不需要永远无所不能。给伙伴留出承担的空间，你才能走得更远。","quotes":["承诺无声，岁月有痕。","守得住规则，才守得住人心。","你们先走，我来守最后一段。"]}],"roleNames":{"strategy":"谋略","social":"人心","courage":"胆识","duty":"担当"},"roleDescriptions":{"strategy":"在暗处看清局势，用证据与判断为自己开路。","social":"理解人心，善于联结他人与化解复杂关系。","courage":"在变化中果断出手，愿意承担行动的风险。","duty":"珍惜承诺与责任，即使局势艰难也愿意守护他人。"},"tierNames":{"early":"意外退场","middle":"另辟人生","legend":"终局传奇"}}</script><script>const engine = (()=>{const module={exports:{}}; const exports=module.exports; "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GAME_VERSION = exports.TOTAL_EPISODES = exports.TOTAL_QUESTIONS = exports.ROLE_BY_CHOICE = void 0;
+exports.getFeedbackDurationMs = getFeedbackDurationMs;
+exports.isChoiceId = isChoiceId;
+exports.isComplete = isComplete;
+exports.evaluate = evaluate;
+exports.getStoryEcho = getStoryEcho;
+exports.getEndingEcho = getEndingEcho;
+exports.ROLE_BY_CHOICE = {
+    A: "strategy",
+    B: "social",
+    C: "courage",
+    D: "duty",
+};
+// 仅四道关键题影响命运：前三道计分/资源，最后一题根据资源判定。
+const KEY_IMPACT = {
+    4: { A: 2, B: 2, C: 1, D: 1 },
+    8: { A: 1, B: 1, C: 2, D: 2 },
+    12: { A: 2, B: 1, C: 2, D: 1 },
+};
+exports.TOTAL_QUESTIONS = 16;
+/** 虚构剧集的总长度；结果中第 X 集应当与此数字对照。 */
+exports.TOTAL_EPISODES = 90;
+/** 中文短反馈按可见字符数展示 3 / 4 / 5 秒。 */
+function getFeedbackDurationMs(text) {
+    const count = Array.from(text.replace(/\s/g, "")).length;
+    return count <= 20 ? 3000 : count <= 40 ? 4000 : 5000;
+}
+exports.GAME_VERSION = "ancient-palace-v1";
+function isChoiceId(value) {
+    return value === "A" || value === "B" || value === "C" || value === "D";
+}
+function isComplete(answers) {
+    for (let i = 1; i <= exports.TOTAL_QUESTIONS; i++) {
+        if (!isChoiceId(answers[i]))
+            return false;
+    }
+    return true;
+}
+/** 评分应始终从完整答案重算，避免返回改题后重复累加。 */
+function evaluate(answers) {
+    if (!isComplete(answers)) {
+        throw new Error("必须回答全部 16 道题后才能结算。");
+    }
+    const scores = { strategy: 0, social: 0, courage: 0, duty: 0 };
+    let clues = 0;
+    let allies = 0;
+    let fateScore = 0;
+    for (let id = 1; id <= exports.TOTAL_QUESTIONS; id++) {
+        const choice = answers[id];
+        scores[exports.ROLE_BY_CHOICE[choice]] += 2;
+        if (id === 4 || id === 8 || id === 12) {
+            fateScore += KEY_IMPACT[id][choice];
+            if (choice === "A" || choice === "C")
+                clues++;
+            else
+                allies++;
+        }
+    }
+    const finalChoice = answers[16];
+    const usingClues = finalChoice === "A" || finalChoice === "C";
+    const prepared = usingClues ? clues >= 2 : allies >= 2;
+    fateScore += prepared ? 2 : 1;
+    const highest = Math.max(...Object.values(scores));
+    const tied = new Set(Object.keys(scores).filter(role => scores[role] === highest));
+    let role = exports.ROLE_BY_CHOICE[answers[16]];
+    // 最高分并列：从最后一题向前找最近命中的维度。
+    for (let i = exports.TOTAL_QUESTIONS; i >= 1; i--) {
+        const currentRole = exports.ROLE_BY_CHOICE[answers[i]];
+        if (tied.has(currentRole)) {
+            role = currentRole;
+            break;
+        }
+    }
+    const tier = fateScore >= 7 ? "legend" : fateScore === 6 ? "middle" : "early";
+    return {
+        role,
+        tier,
+        endingId: `${role}_${tier}`,
+        scores,
+        clues,
+        allies,
+        fateScore,
+        choices: { ...answers },
+    };
+}
+/** 数据驱动的短篇剧情：只读已发生的选择，不修改评分状态。 */
+function getStoryEcho(answers, completedChapter) {
+    if (completedChapter === 1) {
+        const c = answers[4];
+        return c === "A" || c === "C"
+            ? "你握住了第一份关键线索，却还不知道谁会先发现你在查案。"
+            : "你换来了一份珍贵的信任。但宫中每一份信任，都需要经受考验。";
+    }
+    if (completedChapter === 2) {
+        const c4 = answers[4], c8 = answers[8];
+        const clueCount = Number(c4 === "A" || c4 === "C") + Number(c8 === "A" || c8 === "C");
+        return clueCount >= 2
+            ? "两份互相呼应的线索终于指向同一处异常。你开始相信，这绝不是单纯的账目疏漏。"
+            : clueCount === 0
+                ? "已有两人愿意助你一臂之力。宫城里的人心，也许是你最大的筹码。"
+                : "你有一条可疑线索，也有一位愿意相助的人。前路仍不明朗，但你不是毫无准备。";
+    }
+    if (completedChapter === 3) {
+        const keyChoices = [answers[4], answers[8], answers[12]];
+        const clues = keyChoices.filter(c => c === "A" || c === "C").length;
+        return clues >= 2
+            ? "旧账与今夜的伪证终于串成一条线。朝审之时，你或许能让证据替你说话。"
+            : "有人在暗处回应你的善意。朝审之时，这些人愿不愿意站出来，将成为最大的悬念。";
+    }
+    return "";
+}
+function getEndingEcho(evaluation) {
+    const final = evaluation.choices[16];
+    const usingClues = final === "A" || final === "C";
+    const ready = usingClues ? evaluation.clues >= 2 : evaluation.allies >= 2;
+    if (ready && usingClues)
+        return "你将一路保留下来的证据摆在殿前，薄薄几页纸终于有了改变局面的力量。";
+    if (ready)
+        return "你曾给予他人的信任在这一刻得到回应，几位关键人物终于愿意与你并肩。";
+    if (usingClues)
+        return "你选择相信手中的线索，可最重要的证据尚未连成完整的链条。";
+    return "你试图用人心化解纷争，但此前的支持仍不够充分。";
+}
+
+return module.exports;})();</script><script>(() => {
+  'use strict';
+  const root = document.getElementById('root');
+  const {chapters, chapterOutros, questions, endings, roleNames, roleDescriptions, tierNames} = JSON.parse(document.getElementById('game-data').textContent);
+  const endingById = Object.fromEntries(endings.map(e => [e.id,e]));
+  const version = engine.GAME_VERSION;
+  const key = 'dayao-fate:static-demo';
+  let screen='home', index=0, answers={}, pending=false, restartDialogOpen=false, advanceDue=false, advanceTimer=null;
+  try {
+    const v=JSON.parse(localStorage.getItem(key)||'null');
+    if(v && v.version===version && ['home','chapter','quiz','preview','report'].includes(v.screen)) {
+      screen=v.screen;
+      index=Number.isInteger(v.index)?Math.max(0,Math.min(15,v.index)):0;
+      answers={};
+      for(let i=1;i<=16;i++)if(engine.isChoiceId(v.answers?.[i]))answers[i]=v.answers[i];
+      if(['preview','report'].includes(screen) && !engine.isComplete(answers))screen='home';
+    }
+  }catch{}
+  function persist(){try{localStorage.setItem(key,JSON.stringify({version,screen,index,answers}));}catch{/* 本地文件或内嵌预览可能禁用存储；不影响本次内存中的试玩。 */}}
+  function requestRestart(){restartDialogOpen=true;render();}
+  function cancelRestart(){restartDialogOpen=false;if(pending && advanceDue){advanceDue=false;advance();}else render();}
+  function reset(){if(advanceTimer!==null)clearTimeout(advanceTimer);advanceTimer=null;advanceDue=false;pending=false;restartDialogOpen=false;screen='chapter';index=0;answers={};render();}
+  function html(s){return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');}
+  function fateProgress(episode){const pct=Math.round(episode/engine.TOTAL_EPISODES*100);return `<div class="fate-progress" aria-label="全剧共 ${engine.TOTAL_EPISODES} 集，你走到了第 ${episode} 集，约 ${pct}%"><div class="fate-progress-heading"><span>你的命运进度</span><strong>第 ${episode} / ${engine.TOTAL_EPISODES} 集 <em>· ${pct}%</em></strong></div><div class="fate-progress-track" role="progressbar" aria-label="剧集进度" aria-valuemin="0" aria-valuemax="${engine.TOTAL_EPISODES}" aria-valuenow="${episode}"><span style="width:${episode/engine.TOTAL_EPISODES*100}%"></span></div><div class="fate-progress-labels"><span>故事开始</span><span>全剧终 · 第 ${engine.TOTAL_EPISODES} 集</span></div></div>`;}
+  function feedbackOverlay(){if(!pending || restartDialogOpen || screen!=='quiz')return '';const selected=answers[index+1], feedback=questions[index].choices.find(c=>c.id===selected)?.feedback||'';const duration=engine.getFeedbackDurationMs(feedback);return `<div class="feedback-overlay" role="dialog" aria-modal="true" aria-label="命运的回响"><div class="feedback-dialog" aria-live="polite"><div class="feedback-seal" aria-hidden="true">✦</div><p class="feedback-kicker">命 运 的 回 响</p><p class="feedback-text">${html(feedback)}</p><div class="feedback-countdown" aria-hidden="true"><span style="animation-duration:${duration}ms"></span></div><p class="feedback-footnote">${duration/1000} 秒后继续剧情</p></div></div>`;}
+  function arrow(){return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>';}
+  function seal(g){return `<span class="palace-seal"><span>${g}</span></span>`;}
+  function block(title,sub,body,no){return `<section class="report-section"><div class="section-index">卷 · ${no}</div><h2>${title}</h2><p class="section-subtitle">${sub}</p>${body}</section>`;}
+  function home(){return `<section class="home-view enter"><div class="home-hero ornament-frame"><div class="hero-orbit hero-orbit-one"></div><div class="hero-orbit hero-orbit-two"></div><div class="hero-stamp">大<br>曜</div><p class="overline">一 场 命 运 · 十 六 次 选 择</p><h1>穿越古代<br><em>你能活到第几集？</em></h1><p class="home-sub">一觉醒来，你成了朝廷里最不起眼的记录官。<br>一桩失踪的赈粮案，却正将你推向风暴中心。</p><div class="hero-divider"><span></span>✦<span></span></div><div class="hero-meta"><span>4 幕沉浸剧情</span><i></i><span>16 次命运选择</span><i></i><span>12 种人生结局</span></div><button class="primary-button hero-start" data-action="start">开启我的古代人生 ${arrow()}</button><p class="hero-note">约 4–6 分钟 · 趣味故事测评 · 免费试玩</p></div><div class="intro-grid"><div class="feature-tile"><span>01</span><strong>你的选择，改变命运</strong><p>线索、盟友与最后的决定，会影响故事结局。</p></div><div class="feature-tile"><span>02</span><strong>十二种专属人生</strong><p>有人执掌棋局，有人仗剑远行，每一种都值得被记住。</p></div></div><p class="disclaimer">本产品为架空历史互动故事，不属于心理诊断或科学人格评估。</p></section>`;}
+  function chapter(){const c=chapters[Math.floor(index/4)]; const recap=index>0?`<div class="chapter-recap"><span>上回书说</span><p>${html(chapterOutros[c.id-1])}</p><p>${html(engine.getStoryEcho(answers,c.id-1))}</p></div>`:'';return `<section class="chapter-view enter"><div class="chapter-topline">大 曜 朝 · 机 密 卷 宗</div><div class="chapter-glyph">${c.glyph}</div><p class="overline">${c.eyebrow}</p><p class="chapter-episode">${c.episodes}</p><h1>${c.title}</h1><div class="chapter-rule">✦</div>${recap}<p class="chapter-description">${c.description}</p><p class="chapter-hook">“${c.hook}”</p><button class="primary-button" data-action="enter">进入第 ${index+1} 题 ${arrow()}</button>${index>0?'<button class="text-button" data-action="back-chapter">返回上一幕</button>':''}</section>`;}
+  function quiz(){const q=questions[index],c=chapters[q.chapter-1],shift=[2,0,3,1][q.id%4], ordered=[...q.choices.slice(shift),...q.choices.slice(0,shift)];return `<section class="quiz-view enter"><div class="progress-box"><div class="progress-top"><span>卷宗进度 · ${c.title}</span><strong>${q.id} / 16</strong></div><div class="progress-track"><span style="width:${Math.round(q.id/16*100)}%"></span></div></div><div class="quiz-card ornament-frame"><div class="question-heading"><span class="chapter-pill">第 ${q.episode} 集 · ${c.title}</span>${q.key?'<span class="key-badge">关键抉择</span>':''}</div><div class="question-number">命运选择 ${String(q.id).padStart(2,'0')}</div><h2>${q.title}</h2><p class="question-context">${q.context}</p><div class="choice-list">${ordered.map((ch,i)=>`<button class="choice-button ${pending&&answers[index+1]===ch.id?'choice-button--selected':''}" data-choice="${ch.id}" ${pending?'disabled':''}><span class="choice-symbol">${['甲','乙','丙','丁'][i]}</span><span class="choice-text">${ch.text}</span><span class="choice-arrow">↗</span></button>`).join('')}</div><p class="question-instruction">请选择此刻最像你的行动，没有标准答案。</p></div><div class="quiz-bottom"><button class="secondary-button" data-action="back">← 上一题</button><span class="step-hint">故事将根据选择继续</span></div><p class="story-note">选择仅用于本次互动故事的角色倾向与结局计算</p></section>`;}
+  function evaluation(){return engine.evaluate(answers);}
+  function preview(){const e=evaluation(),ending=endingById[e.endingId];return `<section class="preview-view enter"><div class="preview-card ornament-frame">${seal('卷')}<p class="overline">卷 宗 已 解 密 一 半</p><h1>你的古代人生<br>已有定数</h1><p class="preview-label">你在大曜王朝走到了</p><div class="preview-episode">第 <strong>${ending.episode}</strong> 集</div>${fateProgress(ending.episode)}<p class="preview-type">${roleNames[e.role]}型 · ${tierNames[e.tier]}</p><div class="preview-locked"><span>✧</span><div><strong>专属身份尚未揭晓</strong><small>人物称号 · 命运终章 · 四维画像 · 三句台词</small></div></div><div class="payment-notice"><strong>开发演示版本</strong><p>正式商业版计划 ¥0.99 解锁报告；当前未接入真实支付，点击下方按钮可免费预览完整交付内容。</p></div><button class="primary-button" data-action="report">免费查看完整档案（演示） ${arrow()}</button><button class="text-button" data-action="revisit">返回修改最终选择</button></div></section>`;}
+  function report(){const e=evaluation(),ending=endingById[e.endingId];const story=block('你的命运终章',ending.title,`<div class="story-paragraphs">${ending.story.map(t=>`<p>${t}</p>`).join('')}</div><div class="echo-box"><strong>最后一子</strong><p>${engine.getEndingEcho(e)}</p></div>`,'壹');const bars=block('你的四维人物画像','本局选择倾向，非心理学测量分数',`<div class="score-list">${['strategy','social','courage','duty'].map(role=>`<div class="score-row"><div class="score-header"><strong>${roleNames[role]}</strong><span>${Math.round(e.scores[role]/32*100)}%</span></div><div class="score-track"><div style="width:${Math.round(e.scores[role]/32*100)}%"></div></div><p>${roleDescriptions[role]}</p></div>`).join('')}</div>`,'贰'); const retros=['你从密信风波里，作出了改变信任与证据分配的第一步。','你在粮仓危机中选择了自己的方式，为接下来行动留下筹码。','你在夜宴的混乱中站稳脚跟，决定该保护什么、揭露什么。','殿前的最后一刻，你作出了决定，命运因此落笔。'];const recalls=block('改写命运的四次选择','你从故事里留下的真实行动',`<div class="recall-list">${[4,8,12,16].map((id,i)=>`<div class="recall-item"><span class="recall-index">0${i+1}</span><div><h3>${['密信风波','粮仓危机','夜宴惊变','殿前定局'][i]}</h3><p>${questions[id-1].choices.find(c=>c.id===answers[id]).text}。${retros[i]}</p></div></div>`).join('')}</div>`,'叁'); const insight=block('你的光芒与盲点','在故事之外，认识另一面的自己',[['你的天赋',ending.strengths],['可能的盲点',ending.shadow],['送给你的话',ending.counsel]].map(([a,b])=>`<div class="insight-card"><span>${a}</span><p>${b}</p></div>`).join(''),'肆'); const quote=block('专属人物台词','若这是一部古装剧，你会留下的话',`<div class="quote-list">${ending.quotes.map((q,i)=>`<blockquote><span>0${i+1}</span>“${q}”</blockquote>`).join('')}</div>`,'伍');return `<section class="report-view enter"><div class="report-top"><span class="report-tag">大曜 · 命运终章</span><span class="report-demo">演示报告 · 未付款</span></div><div class="result-hero ornament-frame">${seal(({strategy:'谋',social:'和',courage:'勇',duty:'守'})[e.role])}<p class="overline">你 的 古 代 人 生 档 案</p><p class="result-episode">第 <strong>${ending.episode}</strong> 集</p>${fateProgress(ending.episode)}<h1>${ending.name}</h1><div class="result-sub">${roleNames[e.role]}型 · ${tierNames[e.tier]}</div><blockquote>“${ending.coverQuote}”</blockquote></div>${story}${bars}${recalls}${insight}${quote}<div class="report-actions"><button class="primary-button" data-action="share">保存 / 分享我的命运海报 ${arrow()}</button><button class="secondary-button" data-action="restart">再活一次 · 重新测试</button><p>故事设定与角色倾向属于趣味创作，不用于判断真实人格或能力。</p></div></section>`;}
+  function render(){persist();root.innerHTML=`<div class="app-shell"><header class="app-header"><div class="header-brand"><span class="brand-emblem">曜</span><div><strong>大曜命运档案</strong><small>ANCIENT FATE CHRONICLE</small></div></div><button class="header-link" data-action="restart">重新开始 ↗</button></header><main>${{home,chapter,quiz,preview,report}[screen]()}</main><footer class="site-footer"><span>大 曜 · 命 运 档 案</span><span>CHOICES MAKE THE STORY</span></footer></div>${feedbackOverlay()}${restartDialogOpen?`<div class="restart-overlay"><div class="restart-dialog" role="alertdialog" aria-modal="true" aria-labelledby="restart-dialog-title" aria-describedby="restart-dialog-description"><span class="restart-dialog-kicker">大曜 · 命运回溯</span><h2 id="restart-dialog-title">确定重新开始吗？</h2><p id="restart-dialog-description">本次的 16 道题答案和当前进度将清空，重新从第一幕开始。</p><div class="restart-dialog-actions"><button class="secondary-button" data-action="cancel-restart" autofocus>继续当前故事</button><button class="primary-button" data-action="confirm-restart">确认重新开始</button></div></div></div>`:''}`;if(!restartDialogOpen)window.scrollTo(0,0);}
+  function advance(){advanceTimer=null;if(restartDialogOpen){advanceDue=true;return;}const qid=index+1;if(qid===16){screen='preview';}else if(qid%4===0){index=qid;screen='chapter';}else index=qid;pending=false;render();}
+  function exportCard(){const ev=evaluation(),ending=endingById[ev.endingId];const c=document.createElement('canvas');c.width=900;c.height=1280;const ctx=c.getContext('2d');const g=ctx.createLinearGradient(0,0,900,1280);g.addColorStop(0,'#fbf7f2');g.addColorStop(1,'#e4dbe6');ctx.fillStyle=g;ctx.fillRect(0,0,900,1280);ctx.strokeStyle='#b8a4ac';ctx.lineWidth=3;ctx.strokeRect(50,50,800,1180);ctx.textAlign='center';ctx.fillStyle='#886c79';ctx.font='24px serif';ctx.fillText('大 曜 · 命 运 档 案',450,150);ctx.fillStyle='#7d5e77';ctx.font='130px serif';ctx.fillText(({strategy:'谋',social:'和',courage:'勇',duty:'守'})[ev.role],450,380);ctx.fillStyle='#4f3c50';ctx.font='bold 100px serif';ctx.fillText(`第 ${ending.episode} 集`,450,570);ctx.font='22px sans-serif';ctx.fillStyle='#977989';ctx.fillText(`全剧 ${engine.TOTAL_EPISODES} 集 · 命运进度 ${Math.round(ending.episode/engine.TOTAL_EPISODES*100)}%`,450,618);ctx.fillStyle='#e7dce4';ctx.fillRect(190,632,520,12);ctx.fillStyle='#826894';ctx.fillRect(190,632,520*ending.episode/engine.TOTAL_EPISODES,12);ctx.font='bold 68px serif';ctx.fillText(ending.name,450,700);ctx.font='28px sans-serif';ctx.fillStyle='#997e95';ctx.fillText(`${roleNames[ev.role]}型 · ${tierNames[ev.tier]}`,450,770);ctx.font='29px sans-serif';ctx.fillStyle='#625062';const lines=[];let line='';for(const ch of '“'+ending.coverQuote+'”'){if(ctx.measureText(line+ch).width>690){lines.push(line);line=ch}else line+=ch;}lines.push(line);lines.forEach((s,i)=>ctx.fillText(s,450,860+48*i));ctx.font='20px sans-serif';ctx.fillStyle='#907c8f';ctx.fillText('一场关于选择的架空故事 · 仅供趣味探索',450,1140);c.toBlob(blob=>{if(!blob)return;const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=`古代人生-第${ending.episode}集.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)},'image/png');}
+  root.addEventListener('click',ev=>{const el=ev.target.closest('[data-action],[data-choice]');if(!el)return;const action=el.dataset.action;if(restartDialogOpen && action!=='cancel-restart' && action!=='confirm-restart')return;if(pending && action!=='restart' && action!=='cancel-restart' && action!=='confirm-restart')return;if(el.dataset.choice){const choice=el.dataset.choice;answers[index+1]=choice;pending=true;const buttons=root.querySelectorAll('[data-choice]');buttons.forEach(b=>{b.disabled=true;if(b.dataset.choice===choice)b.classList.add('choice-button--selected');});const feedback=questions[index].choices.find(c=>c.id===choice).feedback;persist();render();advanceTimer=setTimeout(advance,engine.getFeedbackDurationMs(feedback));return;}switch(el.dataset.action){case 'start':screen='chapter';index=0;answers={};break;case 'enter':screen='quiz';break;case 'back':if(index>0){if(index%4===0)index--;else index--;}else screen='chapter';break;case 'back-chapter':index=Math.max(0,index-1);screen='quiz';break;case 'report':screen='report';break;case 'revisit':screen='quiz';index=15;break;case 'share':exportCard();return;case 'restart':requestRestart();return;case 'cancel-restart':cancelRestart();return;case 'confirm-restart':reset();return;}render();});
+  render();
+})();
+</script></body></html>
