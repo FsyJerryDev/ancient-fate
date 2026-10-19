@@ -64,15 +64,37 @@
     if(pending && (action==='restart' || action==='dashboard')){if(advanceTimer!==null)clearTimeout(advanceTimer);advanceTimer=null;pending=false;}
     if(el.dataset.choice){
       const choice=el.dataset.choice;
-      busy=true;
+      const question=index+1;
+      const previousAnswers=answers;
+      const feedback=questions[index].choices.find(c=>c.id===choice).feedback;
+      const duration=engine.getFeedbackDurationMs(feedback);
+      let feedbackFinished=false;
+      let answerSaved=false;
+
+      // 立即展示剧情反馈，并行提交答案；网络延迟不再阻塞弹窗。
+      // 只有反馈动画结束且服务端确认保存，才能进入下一题。
+      answers={...answers,[question]:choice};
+      pending=true;busy=true;errorText='';
+      render();
+      advanceTimer=setTimeout(()=>{
+        advanceTimer=null;
+        feedbackFinished=true;
+        if(answerSaved) void advance();
+      },duration);
       try{
-        // 服务器先持久化，成功后才开始反馈倒计时；避免网络失败丢失答案。
-        const saved=await api.call('save_answer',{sessionId,question:index+1,choice});
+        const saved=await api.call('save_answer',{sessionId,question,choice});
         answers=saved.answers;
-        pending=true;busy=false;render();
-        const feedback=questions[index].choices.find(c=>c.id===choice).feedback;
-        advanceTimer=setTimeout(advance,engine.getFeedbackDurationMs(feedback));
-      }catch(e){busy=false;errorText=e.message;render();}
+        answerSaved=true;
+        busy=false;
+        if(feedbackFinished) await advance();
+      }catch(e){
+        if(advanceTimer!==null)clearTimeout(advanceTimer);
+        advanceTimer=null;
+        answers=previousAnswers;
+        pending=false;busy=false;
+        errorText='答案保存失败，请重新选择。'+(e?.message||'');
+        render();
+      }
       return;
     }
     switch(action){
