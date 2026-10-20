@@ -249,8 +249,9 @@ Deno.serve(async(req) => {
       try {const binary=atob(image);bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));}
       catch {fail('海报图片数据错误');}
       if(bytes.length>5_242_880 || bytes.length<100 || bytes[0]!==137 || bytes[1]!==80 || bytes[2]!==78 || bytes[3]!==71 || bytes[4]!==13 || bytes[5]!==10 || bytes[6]!==26 || bytes[7]!==10) fail('只支持 5MB 以下的 PNG 图片',413);
-      const objectName=`${code.id}/${result.id}/${crypto.randomUUID()}.png`;
-      const {error:uploadError}=await db.storage.from('fate-posters').upload(objectName,bytes,{contentType:'image/png',cacheControl:'3600',upsert:false});
+      const objectName=`${code.id}/${result.id}/poster.png`;
+      // One private image per finished result: repeated saves replace it rather than accumulating files.
+      const {error:uploadError}=await db.storage.from('fate-posters').upload(objectName,bytes,{contentType:'image/png',cacheControl:'60',upsert:true});
       if(uploadError) {console.error('poster upload failed',uploadError.message);fail('海报暂存失败，请稍后重试',503);}
       const {data:signed,error:signError}=await db.storage.from('fate-posters').createSignedUrl(objectName,3600,{download:false});
       if(signError||!signed?.signedUrl) fail('海报链接生成失败',503);
