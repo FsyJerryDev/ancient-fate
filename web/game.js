@@ -89,6 +89,41 @@
     });
     document.body.appendChild(overlay);
     document.body.style.overflow='hidden';
+    if(/MicroMessenger/i.test(ua)&&resultId&&api.getToken()){
+      const tip=overlay.querySelector('#poster-tip');
+      tip.textContent='正在为微信准备高清海报，请稍候……';
+      const reader=new FileReader();
+      reader.onload=async()=>{
+        try{
+          const data=String(reader.result||'');
+          const base64=data.startsWith('data:image/png;base64,')?data.slice('data:image/png;base64,'.length):'';
+          if(!base64)throw new Error('图片编码失败');
+          const uploaded=await api.call('poster_upload',{resultId,image:base64});
+          if(document.getElementById('poster-overlay')!==overlay)return;
+          const img=overlay.querySelector('.poster-preview-image');
+          img.onload=()=>{
+            if(document.getElementById('poster-overlay')!==overlay)return;
+            tip.textContent='微信高清海报已准备好。请长按下方图片，选择“保存图片”。如果没有弹出菜单，可点击“查看高清原图”后长按保存。链接有效期为 1 小时。';
+          };
+          img.onerror=()=>{
+            if(document.getElementById('poster-overlay')!==overlay)return;
+            tip.textContent='微信加载高清图失败。请尝试在手机系统浏览器中打开测评，再保存图片。';
+          };
+          img.src=uploaded.imageUrl;
+          const btn=document.createElement('a');
+          btn.className='poster-original-link';
+          btn.href=uploaded.imageUrl;
+          btn.target='_blank';btn.rel='noopener noreferrer';
+          btn.textContent='查看高清原图（长按保存）';
+          overlay.querySelector('.poster-actions').prepend(btn);
+        }catch(e){
+          if(document.getElementById('poster-overlay')!==overlay)return;
+          tip.textContent='微信海报上传暂时失败：'+(e?.message||'请重试')+'。可尝试在手机系统浏览器打开测评保存。';
+        }
+      };
+      reader.onerror=()=>{if(document.getElementById('poster-overlay')===overlay)tip.textContent='海报图片处理失败，请重试。';};
+      reader.readAsDataURL(blob);
+    }
   }
   function handlePosterClick(action){
     if(action==='poster-close'){closePoster();return true;}
