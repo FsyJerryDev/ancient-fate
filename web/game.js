@@ -39,6 +39,38 @@
   async function revokeShare(){if(!resultId)return;if(!confirm('确定关闭这份结果此前所有分享链接吗？'))return;try{await api.call('revoke_shares',{resultId});alert('旧分享链接已关闭。');}catch(e){alert(e.message);}}
   function render(){persist();root.innerHTML=`<div class="app-shell"><header class="app-header"><div class="header-brand"><span class="brand-emblem">曜</span><div><strong>大曜命运档案</strong><small>ANCIENT FATE CHRONICLE</small></div></div><button class="header-link" data-action="dashboard">${screen==='shared'?'返回验证':'我的档案'} ↗</button></header><main>${({redeem:accessView,dashboard,home,chapter,quiz,preview,report,shared:sharedReport,"share-error":()=>`<section class="chapter-view"><h2>分享链接无法打开</h2><p>${html(errorText)}</p><button class="primary-button" data-action="share-exit">返回首页</button></section>`})[screen]()}</main><footer class="site-footer"><span>大 曜 · 命 运 档 案</span><span>CHOICES MAKE THE STORY</span></footer></div>${errorText&&screen!=="share-error"?`<div class="ui-error" role="alert">${html(errorText)}</div>`:""}${feedbackOverlay()}${restartDialogOpen?`<div class="restart-overlay"><div class="restart-dialog" role="alertdialog" aria-modal="true" aria-labelledby="restart-dialog-title" aria-describedby="restart-dialog-description"><span class="restart-dialog-kicker">大曜 · 命运回溯</span><h2 id="restart-dialog-title">确定重新开始吗？</h2><p id="restart-dialog-description">本次已占用的体验次数不会退回。将清空当前会话答案，从第一幕重新作答。</p><div class="restart-dialog-actions"><button class="secondary-button" data-action="cancel-restart" autofocus>继续当前故事</button><button class="primary-button" data-action="confirm-restart">确认重新开始</button></div></div></div>`:''}`;if(!restartDialogOpen)window.scrollTo(0,0);}
   async function advance(){advanceTimer=null;if(restartDialogOpen){advanceDue=true;return;}const qid=index+1;if(qid===16){try{const done=await api.call('complete',{sessionId});resultId=done.result.id;screen='preview';errorText='';}catch(e){errorText=e.message;screen='quiz';}}else if(qid%4===0){index=qid;screen='chapter';}else index=qid;pending=false;render();}
+  
+  let posterUrl='',posterFile=null;
+  function closePoster(){
+    document.getElementById('poster-overlay')?.remove();
+    if(posterUrl)URL.revokeObjectURL(posterUrl);
+    posterUrl='';posterFile=null;document.body.style.overflow='';
+  }
+  function openPoster(blob,name){
+    closePoster();
+    posterUrl=URL.createObjectURL(blob);
+    posterFile=new File([blob],name,{type:'image/png'});
+    let canShare=false;
+    try{canShare=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[posterFile]}));}catch{}
+    const overlay=document.createElement('div');
+    overlay.className='poster-overlay';overlay.id='poster-overlay';
+    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','保存命运海报');
+    overlay.innerHTML=`<div class="poster-sheet"><div class="poster-header"><strong>保存我的命运海报</strong><button type="button" data-action="poster-close">关闭 ×</button></div><p class="poster-tip" id="poster-tip">海报已生成。iPhone 请长按图片选择“存储到照片”，安卓请长按选择“保存图片”。${canShare?'或者点击系统分享，选择保存图像。':''}</p><div class="poster-preview-scroll"><img class="poster-preview-image" src="${posterUrl}" alt="长按可保存的命运海报"></div><div class="poster-actions">${canShare?'<button type="button" data-action="poster-share">系统分享 / 保存到相册</button>':''}<button type="button" data-action="poster-download">下载 PNG 文件</button></div></div>`;
+    document.body.appendChild(overlay);
+    document.body.style.overflow='hidden';
+  }
+  function handlePosterClick(action){
+    if(action==='poster-close'){closePoster();return true;}
+    if(action==='poster-share'){
+      if(posterFile&&navigator.share){navigator.share({files:[posterFile],title:'大曜命运档案'}).catch(e=>{if(e?.name!=='AbortError'){const tip=document.getElementById('poster-tip');if(tip)tip.textContent='分享未能打开，请长按海报图片选择保存到相册。';}});}
+      return true;
+    }
+    if(action==='poster-download'){
+      if(posterUrl){const a=document.createElement('a');a.href=posterUrl;a.download=posterFile?.name||'命运海报.png';document.body.appendChild(a);a.click();a.remove();}
+      return true;
+    }
+    return false;
+  }
   function exportCard(){const ev=evaluation(),ending=endingById[ev.endingId];const c=document.createElement('canvas');c.width=900;c.height=3260;const ctx=c.getContext('2d');const g=ctx.createLinearGradient(0,0,900,1280);g.addColorStop(0,'#fbf7f2');g.addColorStop(1,'#e4dbe6');ctx.fillStyle=g;ctx.fillRect(0,0,900,1280);ctx.strokeStyle='#b8a4ac';ctx.lineWidth=3;ctx.strokeRect(50,50,800,3160);ctx.textAlign='center';ctx.fillStyle='#886c79';ctx.font='24px serif';ctx.fillText('大 曜 · 命 运 档 案',450,150);ctx.fillStyle='#7d5e77';ctx.font='130px serif';ctx.fillText(({strategy:'谋',social:'和',courage:'勇',duty:'守'})[ev.role],450,380);ctx.fillStyle='#4f3c50';ctx.font='bold 100px serif';ctx.fillText(`第 ${ending.episode} 集`,450,570);ctx.font='22px sans-serif';ctx.fillStyle='#977989';ctx.fillText(`全剧 ${engine.TOTAL_EPISODES} 集 · 命运进度 ${Math.round(ending.episode/engine.TOTAL_EPISODES*100)}%`,450,618);ctx.fillStyle='#e7dce4';ctx.fillRect(190,632,520,12);ctx.fillStyle='#826894';ctx.fillRect(190,632,520*ending.episode/engine.TOTAL_EPISODES,12);ctx.font='bold 68px serif';ctx.fillText(ending.name,450,700);ctx.font='28px sans-serif';ctx.fillStyle='#997e95';ctx.fillText(`${roleNames[ev.role]}型 · ${tierNames[ev.tier]}`,450,770);ctx.font='29px sans-serif';ctx.fillStyle='#625062';const lines=[];let line='';for(const ch of '“'+ending.coverQuote+'”'){if(ctx.measureText(line+ch).width>690){lines.push(line);line=ch}else line+=ch;}lines.push(line);lines.forEach((s,i)=>ctx.fillText(s,450,860+48*i));ctx.font='20px sans-serif';ctx.fillStyle='#907c8f';ctx.fillText('一场关于选择的架空故事 · 仅供趣味探索',450,1140);
     // 基于 V3 原有结果海报，在下方补全长图报告：不修改评分算法或人物文案。
     ctx.textAlign='left';ctx.fillStyle='#4f3c50';
@@ -54,11 +86,20 @@
     cy=paragraph('送给你的话：'+ending.counsel,cy);
     cy+=8;cy=section('04 · 三句人物台词',cy);
     for(const quote of ending.quotes)cy=paragraph('“'+quote+'”',cy,23);
-    ctx.textAlign='center';ctx.font='19px sans-serif';ctx.fillStyle='#907c8f';ctx.fillText('大曜命运档案 · 全剧共 90 集 · 纯属架空故事',450,3185);c.toBlob(blob=>{if(!blob)return;const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;a.download=`古代人生-第${ending.episode}集.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),60000)},'image/png');}
+    ctx.textAlign='center';ctx.font='19px sans-serif';ctx.fillStyle='#907c8f';ctx.fillText('大曜命运档案 · 全剧共 90 集 · 纯属架空故事',450,3185);c.toBlob(blob=>{
+      if(!blob){alert('海报生成失败，请重试');return;}
+      const name='古代人生-第'+ending.episode+'集.png';
+      if(window.matchMedia('(min-width:761px) and (pointer:fine)').matches){
+        const url=URL.createObjectURL(blob),a=document.createElement('a');
+        a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),60000);
+      }else openPoster(blob,name);
+    },'image/png');}
   root.addEventListener('submit',async ev=>{if(ev.target?.id!=='redeem-form')return;ev.preventDefault();if(busy)return;const value=root.querySelector('#redeem-code')?.value||'';const canonical=value.normalize('NFKC').replace(/[\s\-]/g,'').toUpperCase();if(!/^FATE[A-HJ-NP-Z2-9]{20}$/.test(canonical)){errorText=value.trim()?'兑换码格式不正确，请从管理员导出的 CSV 第二列复制完整兑换码（不是记录 ID）。':'请先粘贴实际生成的兑换码，输入框中的 XXXXX 只是示例。';render();const input=root.querySelector('#redeem-code');if(input)input.value=value;return;}busy=true;errorText='';render();try{const d=await api.call('redeem',{code:value},true);api.setToken(d.token);await refreshDashboard();}catch(e){errorText=e.message;screen='redeem';}finally{busy=false;render();const input=root.querySelector('#redeem-code');if(input)input.value=value;}});
   root.addEventListener('click',async ev=>{
     const el=ev.target.closest('[data-action],[data-choice]');if(!el)return;
     const action=el.dataset.action;
+    if(handlePosterClick(action))return;
     if(restartDialogOpen && action!=='cancel-restart' && action!=='confirm-restart')return;
     if(busy || (pending && !['cancel-restart','confirm-restart','restart','dashboard'].includes(action)))return;
     if(pending && (action==='restart' || action==='dashboard')){if(advanceTimer!==null)clearTimeout(advanceTimer);advanceTimer=null;pending=false;}
