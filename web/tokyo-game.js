@@ -150,26 +150,13 @@
     }
     return false;
   }
-  function exportCard(){const ev=evaluation(),ending=endingById[ev.endingId];const c=document.createElement('canvas');c.width=900;c.height=3260;const ctx=c.getContext('2d');const g=ctx.createLinearGradient(0,0,900,1280);g.addColorStop(0,'#fbf7f2');g.addColorStop(1,'#e4dbe6');ctx.fillStyle=g;ctx.fillRect(0,0,900,1280);ctx.strokeStyle='#b8a4ac';ctx.lineWidth=3;ctx.strokeRect(50,50,800,3160);ctx.textAlign='center';ctx.fillStyle='#886c79';ctx.font='24px serif';ctx.fillText('大 曜 · 命 运 档 案',450,150);ctx.fillStyle='#7d5e77';ctx.font='130px serif';ctx.fillText(({strategy:'谋',social:'和',courage:'勇',duty:'守'})[ev.role],450,380);ctx.fillStyle='#4f3c50';ctx.font='bold 100px serif';ctx.fillText(`第 ${ending.episode} 集`,450,570);ctx.font='22px sans-serif';ctx.fillStyle='#977989';ctx.fillText(`全剧 ${engine.TOTAL_EPISODES} 集 · 命运进度 ${Math.round(ending.episode/engine.TOTAL_EPISODES*100)}%`,450,618);ctx.fillStyle='#e7dce4';ctx.fillRect(190,632,520,12);ctx.fillStyle='#826894';ctx.fillRect(190,632,520*ending.episode/engine.TOTAL_EPISODES,12);ctx.font='bold 68px serif';ctx.fillText(ending.name,450,700);ctx.font='28px sans-serif';ctx.fillStyle='#997e95';ctx.fillText(`${roleNames[ev.role]}型 · ${tierNames[ev.tier]}`,450,770);ctx.font='29px sans-serif';ctx.fillStyle='#625062';const lines=[];let line='';for(const ch of '“'+ending.coverQuote+'”'){if(ctx.measureText(line+ch).width>690){lines.push(line);line=ch}else line+=ch;}lines.push(line);lines.forEach((s,i)=>ctx.fillText(s,450,860+48*i));ctx.font='20px sans-serif';ctx.fillStyle='#907c8f';ctx.fillText('一场关于选择的架空故事 · 仅供趣味探索',450,1140);
-    // 基于 V3 原有结果海报，在下方补全长图报告：不修改评分算法或人物文案。
-    ctx.textAlign='left';ctx.fillStyle='#4f3c50';
-    function section(text,y){ctx.font='bold 34px serif';ctx.fillStyle='#785d83';ctx.fillText(text,105,y);return y+55;}
-    function paragraph(text,y,fontSize=25){ctx.font=`${fontSize}px sans-serif`;ctx.fillStyle='#5c4c5a';const maxWidth=690;const lineHeight=fontSize+18;let line='';for(const ch of text){if(ch==='\n'){if(line){ctx.fillText(line,105,y);y+=lineHeight;}line='';y+=12;continue;}if(ctx.measureText(line+ch).width>maxWidth&&line){ctx.fillText(line,105,y);y+=lineHeight;line=ch;}else line+=ch;}if(line){ctx.fillText(line,105,y);y+=lineHeight;}return y+20;}
-    let cy=1250;cy=section('01 · 命运终章',cy);
-    for(const text of ending.story)cy=paragraph(text,cy+7);
-    cy+=24;cy=section('02 · 四维性格',cy);
-    for(const k of ['strategy','social','courage','duty']){ctx.font='25px sans-serif';ctx.fillStyle='#695578';ctx.fillText(`${roleNames[k]}  ${Math.round(ev.scores[k]/32*100)}%`,110,cy);cy+=49;}
-    cy+=18;cy=section('03 · 优点与提醒',cy);
-    cy=paragraph('你的天赋：'+ending.strengths,cy);
-    cy=paragraph('可能的盲点：'+ending.shadow,cy);
-    cy=paragraph('送给你的话：'+ending.counsel,cy);
-    cy+=8;cy=section('04 · 三句人物台词',cy);
-    for(const quote of ending.quotes)cy=paragraph('“'+quote+'”',cy,23);
-    ctx.textAlign='center';ctx.font='19px sans-serif';ctx.fillStyle='#907c8f';ctx.fillText('大曜命运档案 · 全剧共 90 集 · 纯属架空故事',450,3185);c.toBlob(blob=>{
-      if(!blob){alert('海报生成失败，请重试');return;}
-      const name='古代人生-第'+ending.episode+'集.png';
-      openPoster(blob,name);
-    },'image/png');}
+  function exportCard(){
+    const ev=evaluation(),ending=endingById[ev.endingId];
+    if(!window.FatePoster){alert('海报组件未加载，请刷新网页重试');return;}
+    window.FatePoster.generate({ev,ending,roleNames,tierNames,totalEpisodes:engine.TOTAL_EPISODES})
+      .then(blob=>openPoster(blob,'古代人生-第'+ending.episode+'集.png'))
+      .catch(error=>alert('海报生成失败：'+(error?.message||'请稍后重试')));
+  }
   root.addEventListener('submit',async ev=>{if(ev.target?.id!=='redeem-form')return;ev.preventDefault();if(busy)return;const value=root.querySelector('#redeem-code')?.value||'';const canonical=value.normalize('NFKC').replace(/[\s\-]/g,'').toUpperCase();if(!/^FATE[A-HJ-NP-Z2-9]{20}$/.test(canonical)){errorText=value.trim()?'兑换码格式不正确，请从管理员导出的 CSV 第二列复制完整兑换码（不是记录 ID）。':'请先粘贴实际生成的兑换码，输入框中的 XXXXX 只是示例。';render();const input=root.querySelector('#redeem-code');if(input)input.value=value;return;}busy=true;errorText='';render();try{const d=await api.call('redeem',{code:value},true);api.setToken(d.token);await refreshDashboard();}catch(e){errorText=e.message;screen='redeem';}finally{busy=false;render();const input=root.querySelector('#redeem-code');if(input)input.value=value;}});
   root.addEventListener('click',async ev=>{
     const el=ev.target.closest('[data-action],[data-choice]');if(!el)return;
