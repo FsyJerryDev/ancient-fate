@@ -240,6 +240,22 @@ Deno.serve(async(req) => {
       const result=await getResult(code.id,payload?.resultId);
       return output(req,{result:publicReport(result)});
     }
+    if (action === 'poster_upload') {
+      // Upload only for a completed result owned by the current access session.
+      const result=await getResult(code.id,payload?.resultId);
+      const image=payload?.image;
+      if(typeof image!=='string' || image.length<100 || image.length>7_100_000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(image)) fail('海报图片数据无效或过大',413);
+      let bytes: Uint8Array;
+      try {const binary=atob(image);bytes=Uint8Array.from(binary,c=>c.charCodeAt(0));}
+      catch {fail('海报图片数据错误');}
+      if(bytes.length>5_242_880 || bytes.length<100 || bytes[0]!==137 || bytes[1]!==80 || bytes[2]!==78 || bytes[3]!==71 || bytes[4]!==13 || bytes[5]!==10 || bytes[6]!==26 || bytes[7]!==10) fail('只支持 5MB 以下的 PNG 图片',413);
+      const objectName=`${code.id}/${result.id}/${crypto.randomUUID()}.png`;
+      const {error:uploadError}=await db.storage.from('fate-posters').upload(objectName,bytes,{contentType:'image/png',cacheControl:'3600',upsert:false});
+      if(uploadError) {console.error('poster upload failed',uploadError.message);fail('海报暂存失败，请稍后重试',503);}
+      const {data:signed,error:signError}=await db.storage.from('fate-posters').createSignedUrl(objectName,3600,{download:false});
+      if(signError||!signed?.signedUrl) fail('海报链接生成失败',503);
+      return output(req,{imageUrl:signed.signedUrl,expiresIn:3600});
+    }
     if (action === 'share') {
       const result=await getResult(code.id,payload?.resultId);
       const token=randomHex();
