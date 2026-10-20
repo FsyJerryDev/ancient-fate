@@ -500,6 +500,7 @@ return module.exports;})();</script><script>(() => {
     overlay.className='poster-overlay';overlay.id='poster-overlay';
     overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','保存命运海报');
     overlay.innerHTML=`<div class="poster-sheet"><div class="poster-header"><strong>保存我的命运海报</strong><button type="button" data-action="poster-close">关闭 ×</button></div><p class="poster-tip" id="poster-tip">海报已生成。iPhone 请长按图片选择“存储到照片”，安卓请长按选择“保存图片”。${canShare?'或者点击系统分享，选择保存图像。':''}</p><div class="poster-preview-scroll"><img class="poster-preview-image" src="${posterUrl}" alt="长按可保存的命运海报"></div><div class="poster-actions">${canShare?'<button type="button" data-action="poster-share">系统分享 / 保存到相册</button>':''}<button type="button" data-action="poster-download">下载 PNG 文件</button></div></div>`;
+    overlay.addEventListener('click',event=>{const target=event.target.closest('[data-action]');if(target)handlePosterClick(target.dataset.action);else if(event.target===overlay)closePoster();});
     document.body.appendChild(overlay);
     document.body.style.overflow='hidden';
   }
