@@ -103,7 +103,7 @@
           const img=overlay.querySelector('.poster-preview-image');
           img.onload=()=>{
             if(document.getElementById('poster-overlay')!==overlay)return;
-            tip.textContent='微信高清海报已准备好。请长按下方图片，选择“保存图片”。如果没有弹出菜单，可点击“查看高清原图”后长按保存。链接有效期为 1 小时。';
+            tip.textContent=/iPhone|iPad|iPod/i.test(ua)?'iPhone 微信：长按下方高清图，选择“保存图片”。若无法保存，点“查看高清原图”后长按。':'安卓微信：长按下方高清图，选择“保存图片”或“下载图片”。若无此选项，点“查看高清原图”后长按。图片链接 1 小时有效。';
           };
           img.onerror=()=>{
             if(document.getElementById('poster-overlay')!==overlay)return;
