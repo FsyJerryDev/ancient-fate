@@ -144,14 +144,14 @@
     const end=data.ending;
     const titleLines=linesFor(ctx,end.title,INNER_WIDTH,50,'700',true);
     const paragraphs=end.story.map(t=>linesFor(ctx,t,INNER_WIDTH,41,'400'));
-    let cy=y+77+titleLines.length*77+22;
+    let cy=y+186+titleLines.length*77;
     for(const p of paragraphs)cy+=p.length*67+29;
     const h=cy-y+35;
     card(ctx,y,h,draw);
     if(draw){
       sectionLabel(ctx,'01','命运终章',y+77,true);
       text(ctx,end.title,INNER_X,y+153,{size:50,lineHeight:77,width:INNER_WIDTH,weight:'700',serif:true,color:COLORS.deep},true);
-      let yp=y+77+titleLines.length*77+22;
+      let yp=y+186+titleLines.length*77;
       for(let i=0;i<end.story.length;i++){
         text(ctx,end.story[i],INNER_X,yp,{size:41,lineHeight:67,width:INNER_WIDTH,color:COLORS.ink},true);
         yp+=paragraphs[i].length*67+29;
