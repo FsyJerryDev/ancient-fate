@@ -40,34 +40,77 @@
   function render(){persist();root.innerHTML=`<div class="app-shell"><header class="app-header"><div class="header-brand"><span class="brand-emblem">曜</span><div><strong>大曜命运档案</strong><small>ANCIENT FATE CHRONICLE</small></div></div><button class="header-link" data-action="dashboard">${screen==='shared'?'返回验证':'我的档案'} ↗</button></header><main>${({redeem:accessView,dashboard,home,chapter,quiz,preview,report,shared:sharedReport,"share-error":()=>`<section class="chapter-view"><h2>分享链接无法打开</h2><p>${html(errorText)}</p><button class="primary-button" data-action="share-exit">返回首页</button></section>`})[screen]()}</main><footer class="site-footer"><span>大 曜 · 命 运 档 案</span><span>CHOICES MAKE THE STORY</span></footer></div>${errorText&&screen!=="share-error"?`<div class="ui-error" role="alert">${html(errorText)}</div>`:""}${feedbackOverlay()}${restartDialogOpen?`<div class="restart-overlay"><div class="restart-dialog" role="alertdialog" aria-modal="true" aria-labelledby="restart-dialog-title" aria-describedby="restart-dialog-description"><span class="restart-dialog-kicker">大曜 · 命运回溯</span><h2 id="restart-dialog-title">确定重新开始吗？</h2><p id="restart-dialog-description">本次已占用的体验次数不会退回。将清空当前会话答案，从第一幕重新作答。</p><div class="restart-dialog-actions"><button class="secondary-button" data-action="cancel-restart" autofocus>继续当前故事</button><button class="primary-button" data-action="confirm-restart">确认重新开始</button></div></div></div>`:''}`;if(!restartDialogOpen)window.scrollTo(0,0);}
   async function advance(){advanceTimer=null;if(restartDialogOpen){advanceDue=true;return;}const qid=index+1;if(qid===16){try{const done=await api.call('complete',{sessionId});resultId=done.result.id;screen='preview';errorText='';}catch(e){errorText=e.message;screen='quiz';}}else if(qid%4===0){index=qid;screen='chapter';}else index=qid;pending=false;render();}
   
+  // Preview stays on this page. Browsers cannot silently write images to Photos.
   let posterUrl='',posterFile=null;
   function closePoster(){
     document.getElementById('poster-overlay')?.remove();
     if(posterUrl)URL.revokeObjectURL(posterUrl);
-    posterUrl='';posterFile=null;document.body.style.overflow='';
+    posterUrl='';posterFile=null;
+    document.body.style.overflow='';
   }
   function openPoster(blob,name){
     closePoster();
+    const ua=navigator.userAgent||'';
+    const inApp=/MicroMessenger|XiaoHongShu|XHS|RedNote|Weibo|QQ\/|FBAN|FBAV/i.test(ua);
+    const isIOS=/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+    const phoneOrTablet=/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||matchMedia('(pointer:coarse)').matches||innerWidth<761;
     posterUrl=URL.createObjectURL(blob);
-    posterFile=new File([blob],name,{type:'image/png'});
+    posterFile=typeof File==='function'?new File([blob],name,{type:'image/png'}):null;
     let canShare=false;
-    try{canShare=!!(navigator.share&&navigator.canShare&&navigator.canShare({files:[posterFile]}));}catch{}
+    try{canShare=!!(posterFile&&navigator.share&&navigator.canShare&&navigator.canShare({files:[posterFile]}));}catch{}
+    const instructions=inApp
+      ? '当前是 App 内置浏览器，可能禁止保存网页生成的图片。建议使用右上角菜单选择“在浏览器打开”，然后在 Safari / Chrome 中保存。若没有此选项，请复制当前页面地址到系统浏览器。'
+      : canShare
+        ? '点击“系统分享”，在弹出的手机系统菜单中选择“存储图像 / 保存到照片”。也可以尝试长按下方海报。'
+        : isIOS
+          ? '长按下方海报，看看是否出现“存储到照片”。如果没有，请在 Safari 打开本页重试；手机浏览器并不都支持网页直接写入相册。'
+          : '长按下方海报，选择“保存图片”。若没有保存选项，请在系统 Chrome 浏览器打开页面重试。';
     const overlay=document.createElement('div');
-    overlay.className='poster-overlay';overlay.id='poster-overlay';
-    overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label','保存命运海报');
-    overlay.innerHTML=`<div class="poster-sheet"><div class="poster-header"><strong>保存我的命运海报</strong><button type="button" data-action="poster-close">关闭 ×</button></div><p class="poster-tip" id="poster-tip">海报已生成。iPhone 请长按图片选择“存储到照片”，安卓请长按选择“保存图片”。${canShare?'或者点击系统分享，选择保存图像。':''}</p><div class="poster-preview-scroll"><img class="poster-preview-image" src="${posterUrl}" alt="长按可保存的命运海报"></div><div class="poster-actions">${canShare?'<button type="button" data-action="poster-share">系统分享 / 保存到相册</button>':''}<button type="button" data-action="poster-download">下载 PNG 文件</button></div></div>`;
-    overlay.addEventListener('click',event=>{const target=event.target.closest('[data-action]');if(target)handlePosterClick(target.dataset.action);else if(event.target===overlay)closePoster();});
+    overlay.className='poster-overlay';
+    overlay.id='poster-overlay';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-label','保存命运海报');
+    overlay.innerHTML=`<div class="poster-sheet"><div class="poster-header"><strong>保存我的命运海报</strong><button type="button" data-action="poster-close">返回结果页 ×</button></div><p class="poster-tip" id="poster-tip"></p><div class="poster-preview-scroll"><img class="poster-preview-image" alt="完整命运海报，可尝试长按保存"></div><div class="poster-actions">${canShare?'<button type="button" data-action="poster-share">系统分享 · 保存到照片</button>':''}${phoneOrTablet?'':'<button type="button" data-action="poster-download">下载 PNG 到电脑</button>'}</div></div>`;
+    overlay.querySelector('#poster-tip').textContent=instructions;
+    // Use an image data URL for long-press compatibility. In some WebViews,
+    // a blob: URL is treated as a temporary document rather than a saveable photo.
+    const img=overlay.querySelector('.poster-preview-image');
+    img.src=posterUrl;
+    try{
+      const reader=new FileReader();
+      reader.onload=()=>{if(posterUrl&&document.getElementById('poster-overlay')===overlay&&typeof reader.result==='string')img.src=reader.result;};
+      reader.readAsDataURL(blob);
+    }catch{}
+    overlay.addEventListener('click',event=>{
+      const target=event.target.closest('[data-action]');
+      if(target)handlePosterClick(target.dataset.action);
+      else if(event.target===overlay)closePoster();
+    });
     document.body.appendChild(overlay);
     document.body.style.overflow='hidden';
   }
   function handlePosterClick(action){
     if(action==='poster-close'){closePoster();return true;}
     if(action==='poster-share'){
-      if(posterFile&&navigator.share){navigator.share({files:[posterFile],title:'大曜命运档案'}).catch(e=>{if(e?.name!=='AbortError'){const tip=document.getElementById('poster-tip');if(tip)tip.textContent='分享未能打开，请长按海报图片选择保存到相册。';}});}
+      if(posterFile&&navigator.share){
+        // Call share directly inside the click handler: iOS requires user activation.
+        navigator.share({files:[posterFile],title:'大曜命运档案'}).catch(e=>{
+          if(e?.name!=='AbortError'){
+            const tip=document.getElementById('poster-tip');
+            if(tip)tip.textContent='系统分享未能打开。请在 Safari / Chrome 中打开测评页面并重试，或长按海报保存。';
+          }
+        });
+      }
       return true;
     }
     if(action==='poster-download'){
-      if(posterUrl){const a=document.createElement('a');a.href=posterUrl;a.download=posterFile?.name||'命运海报.png';document.body.appendChild(a);a.click();a.remove();}
+      if(posterUrl){
+        const a=document.createElement('a');
+        a.href=posterUrl;
+        a.download=posterFile?.name||'命运海报.png';
+        document.body.appendChild(a);a.click();a.remove();
+      }
       return true;
     }
     return false;
@@ -90,11 +133,7 @@
     ctx.textAlign='center';ctx.font='19px sans-serif';ctx.fillStyle='#907c8f';ctx.fillText('大曜命运档案 · 全剧共 90 集 · 纯属架空故事',450,3185);c.toBlob(blob=>{
       if(!blob){alert('海报生成失败，请重试');return;}
       const name='古代人生-第'+ending.episode+'集.png';
-      if(window.matchMedia('(min-width:761px) and (pointer:fine)').matches){
-        const url=URL.createObjectURL(blob),a=document.createElement('a');
-        a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
-        setTimeout(()=>URL.revokeObjectURL(url),60000);
-      }else openPoster(blob,name);
+      openPoster(blob,name);
     },'image/png');}
   root.addEventListener('submit',async ev=>{if(ev.target?.id!=='redeem-form')return;ev.preventDefault();if(busy)return;const value=root.querySelector('#redeem-code')?.value||'';const canonical=value.normalize('NFKC').replace(/[\s\-]/g,'').toUpperCase();if(!/^FATE[A-HJ-NP-Z2-9]{20}$/.test(canonical)){errorText=value.trim()?'兑换码格式不正确，请从管理员导出的 CSV 第二列复制完整兑换码（不是记录 ID）。':'请先粘贴实际生成的兑换码，输入框中的 XXXXX 只是示例。';render();const input=root.querySelector('#redeem-code');if(input)input.value=value;return;}busy=true;errorText='';render();try{const d=await api.call('redeem',{code:value},true);api.setToken(d.token);await refreshDashboard();}catch(e){errorText=e.message;screen='redeem';}finally{busy=false;render();const input=root.querySelector('#redeem-code');if(input)input.value=value;}});
   root.addEventListener('click',async ev=>{
