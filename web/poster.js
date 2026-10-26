@@ -512,3 +512,4 @@
 
   window.FatePoster={generate,open};
 })();
+
