@@ -3,6 +3,7 @@
   const root = document.getElementById('root');
   const api = window.FateAPI;
   let screen = 'redeem', sessionId = '', step = null, result = null, dashboard = null, error = '', busy = false;
+  let reportIsOwned = false;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   const call = (action, body, anonymous = false) => api.call(action, body, anonymous);
   function layout(body) { const environment=window.FATE_CONFIG?.environmentName; root.innerHTML = `<div class="app-shell"><header class="app-header"><div class="header-brand"><span class="brand-emblem">曜</span><div><strong>大曜命运档案</strong><small>ANCIENT FATE CHRONICLE</small></div></div><button class="header-link" data-action="dashboard">我的档案 ↗</button></header>${environment&&!environment.startsWith('PRODUCTION')?`<p class="report-demo" style="text-align:center">${esc(environment)}</p>`:''}<main>${body}</main><footer class="site-footer"><span>大 曜 · 命 运 档 案</span><span>CHOICES MAKE THE STORY</span></footer></div>${error ? `<div class="ui-error" role="alert">${esc(error)}</div>` : ''}`; }
@@ -12,7 +13,7 @@
   function report() { const r=result; const scores=Object.entries(r.scores||{}).map(([name,value])=>`<div class="score-row"><div class="score-header"><strong>${esc(name)}</strong><span>${Math.round(Number(value)/32*100)}%</span></div><div class="score-track"><div style="width:${Math.round(Number(value)/32*100)}%"></div></div></div>`).join(''); layout(`<section class="report-view enter"><div class="report-top"><span class="report-tag">大曜 · 命运终章</span></div><div class="result-hero ornament-frame"><p class="overline">你 的 古 代 人 生 档 案</p><p class="result-episode">第 <strong>${r.episode}</strong> 集</p><h1>${esc(r.name)}</h1><div class="result-sub">${esc(r.role)} · ${esc(r.tier)}</div><blockquote>“${esc(r.coverQuote)}”</blockquote></div><section class="report-section"><h2>${esc(r.title)}</h2><div class="story-paragraphs">${r.story.map(x=>`<p>${esc(x)}</p>`).join('')}</div></section><section class="report-section"><h2>你的四维人物画像</h2><div class="score-list">${scores}</div></section><section class="report-section"><h2>你的光芒与盲点</h2><div class="insight-card"><span>你的天赋</span><p>${esc(r.strengths)}</p></div><div class="insight-card"><span>可能的盲点</span><p>${esc(r.shadow)}</p></div><div class="insight-card"><span>送给你的话</span><p>${esc(r.counsel)}</p></div></section><section class="report-section"><h2>你的三句人物台词</h2><div class="quote-list">${r.quotes.map((x,i)=>`<blockquote><span>0${i+1}</span>“${esc(x)}”</blockquote>`).join('')}</div></section><div class="report-actions"><button class="primary-button" data-action="poster">保存命运海报</button><button class="primary-button" data-action="share">复制专属结果链接</button><button class="secondary-button" data-action="dashboard">返回档案</button></div></section>`); }
   async function refresh() { dashboard = await call('dashboard'); screen='dashboard'; error=''; dash(); }
   async function load(id, question) { sessionId=id; step=await call('get_step',{sessionId:id,question}); screen='quiz'; error=''; quiz(); }
-  async function finish() { const done=await call('complete',{sessionId}); result=done.result; const full=await call('get_result',{resultId:result.id}); result=full.result; screen='report'; report(); }
+  async function finish() { const done=await call('complete',{sessionId}); result=done.result; const full=await call('get_result',{resultId:result.id}); result=full.result; reportIsOwned=true; screen='report'; report(); }
   function render() {
     if (screen === 'quiz') quiz();
     else if (screen === 'dashboard') dash();
@@ -55,6 +56,7 @@
       else if (el.dataset.result) {
         const data = await call('get_result', { resultId: el.dataset.result });
         result = data.result;
+        reportIsOwned = true;
         screen = 'report';
       } else if (el.dataset.action === 'start') {
         const data = await call('start');
@@ -63,16 +65,16 @@
       else if (el.dataset.action === 'dashboard') await refresh();
       else if (el.dataset.action === 'logout') {
         api.setToken('');
+        reportIsOwned = false;
         screen = 'redeem';
       } else if (el.dataset.action === 'poster') {
         if (!window.FatePoster) throw new Error('海报组件未加载');
-        const blob = await window.FatePoster.generate({ ev: { role: result.role, scores: result.scores }, ending: result, roleNames: { strategy: '谋略', social: '人心', courage: '胆识', duty: '担当' }, tierNames: { early: '意外退场', middle: '另辟人生', legend: '终局传奇' }, totalEpisodes: 90 });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = '大曜命运档案.png';
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 60000);
+        const blob = await window.FatePoster.generate({ ev: { role: result.role, tier: result.tier, scores: result.scores }, ending: result, roleNames: { strategy: '谋略', social: '人心', courage: '胆识', duty: '担当' }, tierNames: { early: '意外退场', middle: '另辟人生', legend: '终局传奇' }, totalEpisodes: 90 });
+        window.FatePoster.open(blob, {
+          filename: '大曜命运档案.png',
+          resultId: reportIsOwned ? result.resultId : '',
+          api,
+        });
       } else if (el.dataset.action === 'share') {
         const data = await call('share', { resultId: result.resultId });
         const url = location.origin + location.pathname + '#share=' + data.token;
@@ -86,5 +88,5 @@
       render();
     }
   });
-  (async()=>{ const share=(location.hash.match(/^#share=([a-f0-9]{64})$/)||[])[1]; try { if(share){result=(await call('public_result',{token:share},true)).result;screen='report';report();} else if(api.getToken())await refresh(); else redeem(); } catch { api.setToken('');screen='redeem';redeem(); } })();
+  (async()=>{ const share=(location.hash.match(/^#share=([a-f0-9]{64})$/)||[])[1]; try { if(share){result=(await call('public_result',{token:share},true)).result;reportIsOwned=false;screen='report';report();} else if(api.getToken())await refresh(); else redeem(); } catch { api.setToken('');screen='redeem';redeem(); } })();
 })();

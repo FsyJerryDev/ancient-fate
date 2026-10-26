@@ -271,5 +271,244 @@
     });
     return blob;
   }
-  window.FatePoster={generate};
+  let activePreview=null;
+  const MAX_UPLOAD_BYTES=5*1024*1024;
+
+  function previewStyles(){
+    if(document.getElementById('fate-poster-preview-style'))return;
+    const style=document.createElement('style');
+    style.id='fate-poster-preview-style';
+    style.textContent=`
+      #poster-overlay{position:fixed;z-index:10050;inset:0;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:12px;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));background:rgba(36,27,45,.76)}
+      #poster-overlay .fate-poster-sheet{width:min(100%,680px);max-height:92vh;max-height:calc(100dvh - 32px);overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#fffaf8;color:#413248;border-radius:18px;padding:18px;box-sizing:border-box;box-shadow:0 18px 65px #241b2d55}
+      #poster-overlay .fate-poster-header{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fffaf8;padding:8px 0}
+      #poster-overlay .fate-poster-header strong{font-size:18px}
+      #poster-overlay button,#poster-overlay .poster-original-link{font:inherit;cursor:pointer;border:1px solid #d8c6d8;border-radius:9px;background:#f5edf5;color:#594164;padding:10px 12px;text-decoration:none;text-align:center}
+      #poster-overlay button:focus-visible,#poster-overlay a:focus-visible{outline:3px solid #72547e;outline-offset:3px}
+      #poster-overlay .poster-tip{font-size:14px;line-height:1.7;margin:14px 0;overflow-wrap:anywhere}
+      #poster-overlay .poster-preview-image{display:block;width:100%;height:auto;max-width:100%;user-select:auto;-webkit-user-select:auto;-webkit-touch-callout:default;border-radius:8px}
+      #poster-overlay .fate-poster-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+      #poster-overlay .fate-poster-actions>*{flex:1 1 180px}
+      #poster-overlay [hidden]{display:none!important}
+    `;
+    document.head.appendChild(style);
+  }
+
+  function readImage(blob){
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>{
+        const data=typeof reader.result==='string'?reader.result:'';
+        if(!data.startsWith('data:image/png;base64,'))reject(new Error('海报图片编码失败'));
+        else resolve(data);
+      };
+      reader.onerror=()=>reject(new Error('海报图片读取失败'));
+      reader.onabort=()=>reject(new Error('海报图片读取已中断'));
+      try{reader.readAsDataURL(blob);}catch(error){reject(error);}
+    });
+  }
+
+  function closePreview(){
+    const state=activePreview;
+    if(!state)return;
+    activePreview=null;
+    state.overlay.remove();
+    document.removeEventListener('keydown',state.onKeydown);
+    if(state.objectUrl)URL.revokeObjectURL(state.objectUrl);
+    document.body.style.setProperty('overflow',state.previousOverflow,state.previousOverflowPriority);
+    if(state.previousFocus?.isConnected&&typeof state.previousFocus.focus==='function')state.previousFocus.focus({preventScroll:true});
+  }
+
+  function open(blob,options={}){
+    if(!blob||typeof blob.size!=='number')throw new Error('海报图片无效');
+    closePreview();
+    previewStyles();
+    const ua=navigator.userAgent||'';
+    const wechat=/MicroMessenger/i.test(ua);
+    const ios=/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/i.test(ua)&&navigator.maxTouchPoints>1);
+    const mobile=/Android|iPhone|iPad|iPod|Mobile/i.test(ua)||
+      (typeof matchMedia==='function'&&matchMedia('(pointer:coarse)').matches)||window.innerWidth<761;
+    const filename=String(options.filename||'命运海报.png');
+    const api=options.api;
+    const resultId=options.resultId;
+    const hasToken=()=>{
+      try{return !!(api&&typeof api.getToken==='function'&&api.getToken());}catch{return false;}
+    };
+    const ownedWechat=wechat&&!!resultId&&hasToken()&&typeof api.call==='function';
+    const file=typeof File==='function'?new File([blob],filename,{type:'image/png'}):null;
+    let canShare=!!(file&&typeof navigator.share==='function');
+    try{if(canShare&&typeof navigator.canShare==='function')canShare=navigator.canShare({files:[file]});}catch{canShare=false;}
+    const instructions=wechat
+      ? '长按下方海报，选择“保存图片”。若微信没有保存选项，可在右上角菜单选择“在浏览器打开”，再用 Safari / Chrome 保存。'
+      : canShare
+        ? '点击“系统分享”，在手机系统菜单中选择“存储图像 / 保存到照片”；也可以长按下方海报保存。'
+        : ios
+          ? '长按下方海报，选择“存储到照片”。若没有此选项，请在 Safari 打开本页保存。'
+          : mobile
+            ? '长按下方海报，选择“保存图片”。若没有此选项，请在系统 Chrome 浏览器中打开本页保存。'
+            : '海报已生成，点击“下载 PNG 到电脑”保存完整图片。';
+    const overlay=document.createElement('div');
+    overlay.id='poster-overlay';
+    overlay.setAttribute('role','dialog');
+    overlay.setAttribute('aria-modal','true');
+    overlay.setAttribute('aria-labelledby','poster-preview-title');
+    overlay.setAttribute('aria-describedby','poster-tip');
+    const sheet=document.createElement('div');
+    sheet.className='fate-poster-sheet';
+    const header=document.createElement('div');
+    header.className='fate-poster-header';
+    const title=document.createElement('strong');
+    title.id='poster-preview-title';
+    title.textContent='保存我的命运海报';
+    const makeButton=(action,label)=>{
+      const button=document.createElement('button');
+      button.type='button';button.id=action;button.dataset.action=action;button.textContent=label;
+      return button;
+    };
+    const close=makeButton('poster-close','返回结果页 ×');
+    header.append(title,close);
+    const tip=document.createElement('p');
+    tip.id='poster-tip';tip.className='poster-tip';tip.setAttribute('aria-live','polite');tip.textContent=instructions;
+    const img=document.createElement('img');
+    img.className='poster-preview-image';img.alt='完整命运海报，可长按保存';
+    const actions=document.createElement('div');actions.className='fate-poster-actions';
+    const original=document.createElement('a');
+    original.id='poster-original-link';original.dataset.action='poster-original-link';original.className='poster-original-link';
+    original.textContent='查看高清原图（长按保存）';original.target='_blank';original.rel='noopener noreferrer';original.hidden=true;
+    const retry=makeButton('poster-retry','重试');retry.hidden=true;
+    const share=makeButton('poster-share','系统分享 · 保存到照片');share.hidden=!canShare;
+    const download=makeButton('poster-download','下载 PNG 到电脑');download.hidden=mobile;
+    actions.append(original,retry,share,download);
+    sheet.append(header,tip,img,actions);overlay.appendChild(sheet);
+    const state={
+      overlay,objectUrl:'',dataUrl:'',remoteUrl:'',readPromise:null,retryKind:'',uploadVersion:0,imageVersion:0,
+      previousOverflow:document.body.style.getPropertyValue('overflow'),
+      previousOverflowPriority:document.body.style.getPropertyPriority('overflow'),
+      previousFocus:document.activeElement,onKeydown:null
+    };
+    const live=()=>activePreview===state&&overlay.isConnected;
+    const errorMessage=error=>error?.message?String(error.message):'请稍后重试';
+    const showError=(message,kind)=>{
+      if(!live())return;
+      tip.textContent=message;state.retryKind=kind;retry.hidden=false;retry.disabled=false;
+    };
+    const localSource=()=>state.dataUrl||state.objectUrl;
+    const showLocal=()=>{
+      const source=localSource();
+      if(!source||!live())return;
+      const imageVersion=++state.imageVersion;
+      img.onload=null;
+      img.onerror=()=>{
+        if(live()&&imageVersion===state.imageVersion)showError('本地海报图片未能加载，请重试。','local');
+      };
+      img.src=source;
+    };
+    const readLocal=()=>{
+      if(state.dataUrl)return Promise.resolve(state.dataUrl);
+      if(!state.readPromise){
+        state.readPromise=readImage(blob).then(data=>{
+          state.dataUrl=data;
+          if(live()&&!state.remoteUrl)showLocal();
+          return data;
+        }).catch(error=>{state.readPromise=null;throw error;});
+      }
+      return state.readPromise;
+    };
+    const showRemote=url=>{
+      if(!live())return;
+      state.remoteUrl=url;
+      original.href=url;original.hidden=false;
+      const imageVersion=++state.imageVersion;
+      img.onload=()=>{
+        if(!live()||imageVersion!==state.imageVersion)return;
+        tip.textContent=(ios?'iPhone 微信：':'安卓微信：')+'长按下方高清海报，选择“保存图片”。也可点“查看高清原图”后长按保存；原图链接 1 小时有效，过期后请关闭并重新生成海报。';
+        retry.hidden=true;retry.disabled=false;state.retryKind='';
+      };
+      img.onerror=()=>{
+        if(!live()||imageVersion!==state.imageVersion)return;
+        showLocal();
+        showError('微信高清图暂时未能加载，已保留本地海报。可重试加载，或点“查看高清原图”后长按保存。','remote');
+      };
+      img.src=url;
+    };
+    const upload=async()=>{
+      if(!live()||!ownedWechat)return;
+      if(blob.size>MAX_UPLOAD_BYTES){
+        tip.textContent='海报超过 5 MB，暂不能生成微信高清原图链接。请长按下方本地海报，或在 Safari / Chrome 中保存。';
+        retry.hidden=true;
+        return;
+      }
+      if(!hasToken()){
+        showError('登录状态已失效，已保留本地海报。请返回结果页重新验证后再试。','upload');
+        return;
+      }
+      const uploadVersion=++state.uploadVersion;
+      retry.hidden=true;retry.disabled=true;
+      tip.textContent='正在为微信准备高清海报，请稍候……本地海报已可预览。';
+      try{
+        const data=await readLocal();
+        if(!live()||uploadVersion!==state.uploadVersion)return;
+        const uploaded=await api.call('poster_upload',{resultId,image:data.slice('data:image/png;base64,'.length)});
+        if(!live()||uploadVersion!==state.uploadVersion)return;
+        const url=new URL(uploaded?.imageUrl);
+        const apiOrigin=new URL(window.FATE_CONFIG?.apiUrl).origin;
+        if(url.protocol!=='https:'||url.origin!==apiOrigin||url.username||url.password)throw new Error('高清海报地址无效');
+        showRemote(url.href);
+      }catch(error){
+        if(!live()||uploadVersion!==state.uploadVersion)return;
+        showError('微信高清海报暂时准备失败：'+errorMessage(error)+'。本地海报仍可预览和保存。','upload');
+      }
+    };
+    const retryPreview=()=>{
+      if(state.retryKind==='upload'){void upload();return;}
+      if(state.retryKind==='remote'){
+        // A failed URL may have expired while the page was left open.
+        void upload();return;
+      }
+      retry.hidden=true;tip.textContent=instructions;
+      void readLocal().then(()=>{if(live())showLocal();}).catch(error=>showError('海报图片处理失败：'+errorMessage(error),'local'));
+    };
+    overlay.addEventListener('click',event=>{
+      const target=event.target.closest('[data-action]');
+      if(event.target===overlay||target?.dataset.action==='poster-close'){closePreview();return;}
+      if(!target)return;
+      if(target.dataset.action==='poster-retry'){retryPreview();return;}
+      if(target.dataset.action==='poster-share'&&file&&typeof navigator.share==='function'){
+        // Keep the native share call directly in the click event for iOS user activation.
+        try{
+          Promise.resolve(navigator.share({files:[file],title:'大曜命运档案'})).catch(error=>{
+            if(error?.name!=='AbortError'&&live())tip.textContent='系统分享未能打开：'+errorMessage(error)+'。可长按海报保存，或在 Safari / Chrome 中重试。';
+          });
+        }catch(error){
+          if(error?.name!=='AbortError')tip.textContent='系统分享未能打开：'+errorMessage(error)+'。可长按海报保存。';
+        }
+      }
+      if(target.dataset.action==='poster-download'){
+        const source=state.objectUrl||state.dataUrl;
+        if(!source)return;
+        const link=document.createElement('a');link.href=source;link.download=filename;
+        document.body.appendChild(link);link.click();link.remove();
+      }
+    });
+    state.onKeydown=event=>{
+      if(!live())return;
+      if(event.key==='Escape'){event.preventDefault();closePreview();return;}
+      if(event.key!=='Tab')return;
+      const controls=Array.from(overlay.querySelectorAll('button,a[href]')).filter(element=>!element.hidden&&!element.disabled);
+      const first=controls[0],last=controls[controls.length-1];
+      if(event.shiftKey&&(document.activeElement===first||!overlay.contains(document.activeElement))){event.preventDefault();last?.focus();}
+      else if(!event.shiftKey&&(document.activeElement===last||!overlay.contains(document.activeElement))){event.preventDefault();first?.focus();}
+    };
+    activePreview=state;
+    document.body.appendChild(overlay);
+    document.body.style.overflow='hidden';
+    document.addEventListener('keydown',state.onKeydown);
+    close.focus({preventScroll:true});
+    try{state.objectUrl=URL.createObjectURL(blob);showLocal();}catch{/* FileReader below still supplies a local preview. */}
+    void readLocal().catch(error=>showError('海报图片处理失败：'+errorMessage(error),ownedWechat?'upload':'local'));
+    if(ownedWechat)void upload();
+    return overlay;
+  }
+
+  window.FatePoster={generate,open};
 })();
