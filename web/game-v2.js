@@ -7,13 +7,24 @@
   let feedback = null;
   let feedbackTimer = null;
   let feedbackSequence = 0;
+  let noticeTimer = null;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   const call = (action, body, anonymous = false) => api.call(action, body, anonymous);
   function getFeedbackDurationMs(text) { const count = Array.from(String(text ?? '').replace(/\s/g, '')).length; return count <= 20 ? 3000 : count <= 40 ? 4000 : 5000; }
   function clearFeedback() { feedbackSequence += 1; if (feedbackTimer !== null) clearTimeout(feedbackTimer); feedbackTimer = null; feedback = null; }
   function feedbackOverlay() { if (!feedback || screen !== 'quiz') return ''; return `<div class="feedback-overlay" role="dialog" aria-modal="true" aria-label="命运的回响"><div class="feedback-dialog" aria-live="polite"><div class="feedback-seal" aria-hidden="true">✦</div><p class="feedback-kicker">命 运 的 回 响</p><p class="feedback-text">${esc(feedback.text)}</p><div class="feedback-countdown" aria-hidden="true" ${feedback.durationMs ? '' : 'hidden'} data-duration="${feedback.durationMs}">${feedback.durationMs ? `<span style="animation-duration:${feedback.durationMs}ms"></span>` : ''}</div></div></div>`; }
   function errorMessage() { return error ? `<div class="ui-error" role="alert">${esc(error)}</div>` : ''; }
-  function layout(body) { const environment=window.FATE_CONFIG?.environmentName; root.innerHTML = `<div class="app-shell"><header class="app-header"><div class="header-brand"><span class="brand-emblem">曜</span><div><strong>大曜命运档案</strong><small>ANCIENT FATE CHRONICLE</small></div></div><button class="header-link" data-action="dashboard">我的档案 ↗</button></header>${environment&&!environment.startsWith('PRODUCTION')?`<p class="report-demo" style="text-align:center">${esc(environment)}</p>`:''}<main>${body}</main><footer class="site-footer"><span>大 曜 · 命 运 档 案</span><span>CHOICES MAKE THE STORY</span></footer></div><div id="feedback-host">${feedbackOverlay()}</div><div id="error-host">${errorMessage()}</div>`; }
+  function layout(body) { const environment=window.FATE_CONFIG?.environmentName; root.innerHTML = `<div class="app-shell"><header class="app-header"><div class="header-brand"><span class="brand-emblem">曜</span><div><strong>大曜命运档案</strong><small>ANCIENT FATE CHRONICLE</small></div></div><button class="header-link" data-action="dashboard">我的档案 ↗</button></header>${environment&&!environment.startsWith('PRODUCTION')?`<p class="report-demo" style="text-align:center">${esc(environment)}</p>`:''}<main>${body}</main><footer class="site-footer"><span>大 曜 · 命 运 档 案</span><span>CHOICES MAKE THE STORY</span></footer></div><div id="feedback-host">${feedbackOverlay()}</div><div id="error-host">${errorMessage()}</div><div id="notice-host" role="status" aria-live="polite"></div>`; }
+  function showNotice(text) {
+    if (noticeTimer !== null) clearTimeout(noticeTimer);
+    const host = root.querySelector('#notice-host');
+    host.innerHTML = `<div class="toast">${esc(text)}</div>`;
+    noticeTimer = setTimeout(() => { host.innerHTML = ''; noticeTimer = null; }, 2500);
+  }
+  function syncReportActions() {
+    for (const button of root.querySelectorAll('button')) button.disabled = busy;
+    root.querySelector('#error-host').innerHTML = errorMessage();
+  }
   // Keep the current question nodes alive: replacing them replays .enter and
   // loses the mobile browser's focus/scroll anchor on every answer request.
   function syncQuiz() {
@@ -123,9 +134,11 @@
     const el = event.target.closest('[data-action],[data-choice],[data-resume],[data-result]');
     if (!el || busy || feedback) return;
     if (el.dataset.choice) { await chooseAnswer(el.dataset.choice); return; }
+    const keepReport = screen === 'report' && ['share', 'poster'].includes(el.dataset.action);
     busy = true;
     error = '';
-    render();
+    if (keepReport) syncReportActions();
+    else render();
     try {
       if (el.dataset.resume) await load(el.dataset.resume, 1);
       else if (el.dataset.result) {
@@ -154,14 +167,15 @@
       } else if (el.dataset.action === 'share') {
         const data = await call('share', { resultId: result.resultId });
         const url = location.origin + location.pathname + '#share=' + data.token;
-        try { await navigator.clipboard.writeText(url); alert('结果链接已复制。'); }
+        try { await navigator.clipboard.writeText(url); showNotice('结果链接已复制。'); }
         catch { prompt('请复制链接：', url); }
       }
     } catch (e) {
       error = e.message;
     } finally {
       busy = false;
-      render();
+      if (keepReport) syncReportActions();
+      else render();
     }
   });
   (async()=>{ const share=(location.hash.match(/^#share=([a-f0-9]{64})$/)||[])[1]; try { if(share){result=(await call('public_result',{token:share},true)).result;reportIsOwned=false;screen='report';report();} else if(api.getToken())await refresh(); else redeem(); } catch { api.setToken('');screen='redeem';redeem(); } })();
